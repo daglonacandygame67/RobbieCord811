@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schoolcord</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deepest: #0e0f13;
+    --bg-sidebar: #16181f;
+    --bg-main: #1c1e27;
+    --bg-input: #12141a;
+    --bg-message-hover: #22253000;
+    --bg-card: #20222d;
+    --accent: #5b7fff;
+    --accent-hover: #7b95ff;
+    --accent-dim: #5b7fff22;
+    --text-primary: #eef0f6;
+    --text-secondary: #8b90a8;
+    --text-muted: #555a72;
+    --border: #2a2d3a;
+    --online: #3dd68c;
+    --danger: #ff5b5b;
+    --radius: 10px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-deepest);
+    color: var(--text-primary);
+    display: flex;
+    height: 100vh;
+  }
+
+  /* ── SETUP SCREEN ── */
+  #setup-screen {
+    position: fixed; inset: 0;
+    background: var(--bg-deepest);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    animation: fadeIn .3s ease;
+  }
+  #setup-screen.hidden { display: none; }
+
+  .setup-card {
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2.5rem 2rem;
+    width: 360px;
+    text-align: center;
+  }
+
+  .setup-logo {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -1px;
+    margin-bottom: .25rem;
+  }
+  .setup-logo span { color: var(--accent); }
+
+  .setup-sub {
+    color: var(--text-secondary);
+    font-size: .875rem;
+    margin-bottom: 2rem;
+  }
+
+  .setup-label {
+    display: block;
+    text-align: left;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: .5rem;
+  }
+
+  .setup-input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 1rem;
+    padding: .75rem 1rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .setup-input:focus { border-color: var(--accent); }
+
+  .setup-btn {
+    margin-top: 1.25rem;
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: .8rem;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+  }
+  .setup-btn:hover { background: var(--accent-hover); }
+  .setup-btn:active { transform: scale(.98); }
+
+  .setup-note {
+    margin-top: 1rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; width: 100%; height: 100%; }
+  #app.hidden { display: none; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 1rem 1rem .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -.5px;
+  }
+  .logo span { color: var(--accent); }
+
+  .logo-sub {
+    font-size: .7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .sidebar-section-title {
+    padding: 1rem 1rem .4rem;
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+  }
+
+  .channel-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 1px .5rem;
+    padding: .45rem .75rem;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: .9rem;
+    color: var(--text-secondary);
+    transition: background .15s, color .15s;
+  }
+  .channel-item.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .channel-item:hover:not(.active) { background: var(--border); color: var(--text-primary); }
+
+  .channel-hash { font-size: 1rem; opacity: .7; }
+
+  .sidebar-spacer { flex: 1; }
+
+  .user-bar {
+    padding: .75rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    background: var(--accent);
+    color: #fff;
+    position: relative;
+  }
+  .avatar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; right: -1px;
+    width: 10px; height: 10px;
+    background: var(--online);
+    border-radius: 50%;
+    border: 2px solid var(--bg-sidebar);
+  }
+
+  .user-info { min-width: 0; }
+  .user-name {
+    font-size: .85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-status { font-size: .7rem; color: var(--text-muted); }
+
+  .logout-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 5px;
+    transition: color .15s, background .15s;
+  }
+  .logout-btn:hover { color: var(--danger); background: #ff5b5b18; }
+
+  /* MAIN CHAT */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-main);
+    min-width: 0;
+  }
+
+  .chat-header {
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-shrink: 0;
+  }
+
+  .chat-header-hash {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 300;
+  }
+
+  .chat-header-name {
+    font-weight: 600;
+    font-size: .95rem;
+  }
+
+  .chat-header-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 .25rem;
+  }
+
+  .chat-header-desc {
+    font-size: .82rem;
+    color: var(--text-secondary);
+  }
+
+  .online-count {
+    margin-left: auto;
+    font-size: .78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+  }
+  .online-dot {
+    width: 7px; height: 7px;
+    background: var(--online);
+    border-radius: 50%;
+  }
+
+  /* MESSAGES */
+  .messages-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0 .5rem;
+    scroll-behavior: smooth;
+  }
+
+  .messages-wrap::-webkit-scrollbar { width: 4px; }
+  .messages-wrap::-webkit-scrollbar-track { background: transparent; }
+  .messages-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .day-divider {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .75rem 1.25rem;
+    font-size: .75rem;
+    color: var(--text-muted);
+  }
+  .day-divider::before, .day-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .message {
+    display: flex;
+    gap: .9rem;
+    padding: .35rem 1.25rem;
+    transition: background .1s;
+    position: relative;
+  }
+  .message:hover { background: #ffffff06; }
+
+  .msg-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .msg-avatar.grouped { visibility: hidden; }
+
+  .msg-body { min-width: 0; flex: 1; }
+
+  .msg-meta {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin-bottom: .15rem;
+  }
+
+  .msg-author {
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--accent-hover);
+  }
+  .msg-author.self { color: #a0d9ff; }
+
+  .msg-time {
+    font-size: .72rem;
+    color: var(--text-muted);
+  }
+
+  .msg-text {
+    font-size: .9rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  .message.grouped .msg-meta { display: none; }
+  .message.grouped { padding-top: .1rem; }
+
+  .grouped-time {
+    position: absolute;
+    left: 1.45rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: .65rem;
+    color: transparent;
+    transition: color .15s;
+    width: 36px;
+    text-align: center;
+    font-family: var(--mono);
+  }
+  .message.grouped:hover .grouped-time { color: var(--text-muted); }
+
+  /* LOADING / SYSTEM MESSAGES */
+  .system-msg {
+    text-align: center;
+    font-size: .8rem;
+    color: var(--text-muted);
+    padding: .5rem 1rem;
+  }
+
+  /* INPUT */
+  .input-area {
+    padding: .75rem 1.25rem 1rem;
+    flex-shrink: 0;
+  }
+
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: .6rem .75rem;
+    gap: .5rem;
+    transition: border-color .2s;
+  }
+  .input-box:focus-within { border-color: var(--accent); }
+
+  #msg-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: .92rem;
+    line-height: 1.5;
+    resize: none;
+    max-height: 160px;
+    min-height: 24px;
+  }
+  #msg-input::placeholder { color: var(--text-muted); }
+
+  .send-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    padding: .4rem .6rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, transform .1s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--accent-hover); }
+  .send-btn:active { transform: scale(.92); }
+  .send-btn svg { width: 18px; height: 18px; }
+  .send-btn:disabled { opacity: .4; cursor: default; }
+
+  /* MEMBERS PANEL */
+  .members-panel {
+    width: 180px;
+    background: var(--bg-sidebar);
+    border-left: 1px solid var(--border);
+    padding: 1rem .75rem;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .members-title {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: .75rem;
+  }
+
+  .member-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .3rem .4rem;
+    border-radius: 6px;
+    cursor: default;
+    transition: background .15s;
+  }
+  .member-item:hover { background: var(--border); }
+
+  .member-avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .member-avatar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; right: -1px;
+    width: 8px; height: 8px;
+    background: var(--online);
+    border-radius: 50%;
+    border: 2px solid var(--bg-sidebar);
+  }
+
+  .member-name {
+    font-size: .8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .member-name.self-label { color: var(--accent-hover); }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    .members-panel { display: none; }
+    .sidebar { width: 56px; }
+    .sidebar-header .logo-sub,
+    .sidebar-section-title,
+    .channel-item span,
+    .user-info { display: none; }
+    .channel-item { justify-content: center; }
+    .user-bar { justify-content: center; }
+    .logout-btn { margin: 0; }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .msg-anim { animation: slideUp .2s ease; }
+
+  /* Typing indicator */
+  .typing-indicator {
+    padding: .25rem 1.25rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+    min-height: 24px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SETUP SCREEN ── -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">School<span>cord</span></div>
+    <div class="setup-sub">Your school's group chat — set up once, chat forever.</div>
+    <label class="setup-label" for="setup-name">Choose a display name</label>
+    <input class="setup-input" type="text" id="setup-name" placeholder="e.g. Alex" maxlength="24" autocomplete="off" />
+    <button class="setup-btn" id="setup-btn" onclick="setupUser()">Join Schoolcord →</button>
+    <p class="setup-note">Your name is saved on this device. No account needed.</p>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app" class="hidden">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">School<span>cord</span></div>
+      <div class="logo-sub">Study. Chat. Learn.</div>
+    </div>
+    <div class="sidebar-section-title">Channels</div>
+    <div class="channel-item active">
+      <span class="channel-hash">#</span>
+      <span>general</span>
+    </div>
+    <div class="sidebar-spacer"></div>
+    <div class="user-bar">
+      <div class="avatar" id="sidebar-avatar"></div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-username"></div>
+        <div class="user-status">Online</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Change name">↩</button>
+    </div>
+  </div>
+
+  <!-- Main chat -->
+  <div class="main">
+    <div class="chat-header">
+      <span class="chat-header-hash">#</span>
+      <span class="chat-header-name">general</span>
+      <div class="chat-header-divider"></div>
+      <span class="chat-header-desc">Everyone's here 👋</span>
+      <div class="online-count">
+        <div class="online-dot"></div>
+        <span id="online-count-text">...</span>
+      </div>
+    </div>
+
+    <div class="messages-wrap" id="messages-wrap">
+      <div class="system-msg">Welcome to #general — the one chat for everyone!</div>
+    </div>
+
+    <div class="typing-indicator" id="typing-indicator"></div>
+
+    <div class="input-area">
+      <div class="input-box">
+        <textarea id="msg-input" rows="1" placeholder="Message #general..." maxlength="2000"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Members -->
+  <div class="members-panel">
+    <div class="members-title">Online</div>
+    <div id="members-list"></div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════
+// FIREBASE CONFIG
+// Replace with your own Firebase project config
+// ═══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAl21viSLPePB7XytPZrG-RsIyWBMfT798",
+  authDomain: "robbiecord811.firebaseapp.com",
+  projectId: "robbiecord811",
+  storageBucket: "robbiecord811.firebasestorage.app",
+  messagingSenderId: "387286792987",
+  appId: "1:387286792987:web:ccdb1e63c13b8f551ff1be",
+  measurementId: "G-8DWMX7FCKS"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ── State ──
+let currentUser = null;
+let typingTimeout = null;
+let lastTypingSent = 0;
+let presenceInterval = null;
+
+// ── Init ──
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('sc_username');
+  if (saved) {
+    currentUser = saved;
+    showApp();
+  }
+
+  const input = document.getElementById('setup-name');
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') setupUser(); });
+
+  const msgInput = document.getElementById('msg-input');
+  msgInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  msgInput.addEventListener('input', () => {
+    autoResize(msgInput);
+    sendTyping();
+  });
+});
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+// ── Setup ──
+function setupUser() {
+  const val = document.getElementById('setup-name').value.trim();
+  if (!val) return;
+  currentUser = val;
+  localStorage.setItem('sc_username', val);
+  showApp();
+}
+
+function logout() {
+  if (presenceInterval) clearInterval(presenceInterval);
+  removePresence();
+  currentUser = null;
+  localStorage.removeItem('sc_username');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('setup-screen').classList.remove('hidden');
+  document.getElementById('setup-name').value = '';
+  document.getElementById('messages-wrap').innerHTML = '<div class="system-msg">Welcome to #general — the one chat for everyone!</div>';
+}
+
+function showApp() {
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+
+  const initials = currentUser.slice(0, 2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('sidebar-username').textContent = currentUser;
+
+  listenMessages();
+  listenPresence();
+  listenTyping();
+  updatePresence();
+  presenceInterval = setInterval(updatePresence, 30000);
+}
+
+// ── Presence ──
+function updatePresence() {
+  if (!currentUser) return;
+  db.collection('presence').doc(currentUser).set({
+    name: currentUser,
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+function removePresence() {
+  if (!currentUser) return;
+  db.collection('presence').doc(currentUser).delete();
+}
+
+window.addEventListener('beforeunload', removePresence);
+
+function listenPresence() {
+  const cutoff = () => new Date(Date.now() - 60000);
+  db.collection('presence').onSnapshot(snap => {
+    const members = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.lastSeen && d.lastSeen.toDate() > cutoff()) {
+        members.push(d.name);
+      }
+    });
+    renderMembers(members);
+  });
+}
+
+function renderMembers(members) {
+  const list = document.getElementById('members-list');
+  const count = document.getElementById('online-count-text');
+  count.textContent = members.length + ' online';
+  list.innerHTML = members.map(name => {
+    const initials = name.slice(0, 2).toUpperCase();
+    const isSelf = name === currentUser;
+    return `<div class="member-item">
+      <div class="member-avatar">${initials}</div>
+      <span class="member-name ${isSelf ? 'self-label' : ''}">${escHtml(name)}${isSelf ? ' (you)' : ''}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Typing ──
+function sendTyping() {
+  const now = Date.now();
+  if (now - lastTypingSent < 3000) return;
+  lastTypingSent = now;
+  db.collection('typing').doc(currentUser).set({
+    name: currentUser,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    db.collection('typing').doc(currentUser).delete();
+  }, 4000);
+}
+
+function listenTyping() {
+  db.collection('typing').onSnapshot(snap => {
+    const typers = [];
+    const cutoff = new Date(Date.now() - 5000);
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.name !== currentUser && d.ts && d.ts.toDate() > cutoff) {
+        typers.push(d.name);
+      }
+    });
+    const el = document.getElementById('typing-indicator');
+    if (typers.length === 0) el.textContent = '';
+    else if (typers.length === 1) el.textContent = `${typers[0]} is typing...`;
+    else el.textContent = `${typers.slice(0, -1).join(', ')} and ${typers.at(-1)} are typing...`;
+  });
+}
+
+// ── Messages ──
+let lastAuthor = null;
+let lastTimestamp = null;
+let renderedIds = new Set();
+
+function listenMessages() {
+  db.collection('messages')
+    .orderBy('timestamp', 'asc')
+    .limitToLast(200)
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const doc = change.doc;
+          if (renderedIds.has(doc.id)) return;
+          renderedIds.add(doc.id);
+          renderMessage(doc.id, doc.data());
+        }
+      });
+    });
+}
+
+function renderMessage(id, data) {
+  const wrap = document.getElementById('messages-wrap');
+  const { author, text, timestamp } = data;
+  const ts = timestamp ? timestamp.toDate() : new Date();
+
+  // Day divider
+  const dateStr = ts.toLocaleDateString('en-SG', { weekday: 'long', month: 'long', day: 'numeric' });
+  const dayKey = ts.toDateString();
+  if (!wrap.querySelector(`[data-day="${dayKey}"]`)) {
+    const div = document.createElement('div');
+    div.className = 'day-divider';
+    div.dataset.day = dayKey;
+    div.textContent = dateStr;
+    wrap.appendChild(div);
+    lastAuthor = null;
+  }
+
+  const timeStr = ts.toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' });
+  const isGrouped = author === lastAuthor && lastTimestamp && (ts - lastTimestamp < 5 * 60000);
+  lastAuthor = author;
+  lastTimestamp = ts;
+
+  const initials = author.slice(0, 2).toUpperCase();
+  const isSelf = author === currentUser;
+
+  const el = document.createElement('div');
+  el.className = `message msg-anim${isGrouped ? ' grouped' : ''}`;
+  el.dataset.id = id;
+
+  el.innerHTML = `
+    <div class="msg-avatar ${isGrouped ? 'grouped' : ''}">${initials}</div>
+    <div class="msg-body">
+      <div class="msg-meta">
+        <span class="msg-author ${isSelf ? 'self' : ''}">${escHtml(author)}</span>
+        <span class="msg-time">${timeStr}</span>
+      </div>
+      <div class="msg-text">${escHtml(text)}</div>
+    </div>
+    ${isGrouped ? `<span class="grouped-time">${timeStr}</span>` : ''}
+  `;
+
+  wrap.appendChild(el);
+  scrollToBottom();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || !currentUser) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Clear typing
+  db.collection('typing').doc(currentUser).delete();
+  lastTypingSent = 0;
+
+  try {
+    await db.collection('messages').add({
+      author: currentUser,
+      text: text,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    console.error('Send failed:', e);
+  }
+}
+
+function scrollToBottom() {
+  const wrap = document.getElementById('messages-wrap');
+  const isNearBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 200;
+  if (isNearBottom) wrap.scrollTop = wrap.scrollHeight;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
