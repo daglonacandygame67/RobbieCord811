@@ -1,347 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schoolcord</title>
+<title>スクールコード — Schoolcord</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --void:#06070d;--base:#0b0d16;--panel:#0f1120;--surface:#131627;--raised:#181c2e;--card:#1d2235;--overlay:#222640;
-  --border:#1e2338;--border2:#252b45;
-  --ink1:#e8ecff;--ink2:#7c85b0;--ink3:#3d4468;--ink4:#252a45;
-  --blue:#4d7cff;--blue2:#6b93ff;--violet:#7c4dff;--cyan:#00d4ff;--green:#00e5a0;--red:#ff4d6d;--gold:#ffc84d;
-  --glow-blue:#4d7cff25;--glow-violet:#7c4dff20;
-  --grad:linear-gradient(135deg,#4d7cff,#7c4dff);--grad2:linear-gradient(135deg,#00d4ff,#4d7cff);
-  --nitro-grad:linear-gradient(135deg,#ffc84d,#ff7c4d);
-  --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+  /* Japanese palette: deep ink, washi paper tones, vermilion accents */
+  --void:#05060a;--base:#080a10;--panel:#0c0e17;--surface:#0f1119;--raised:#12151f;--card:#161924;--overlay:#1b1f2d;
+  --border:#1a1e2e;--border2:#222840;--border3:#2a3050;
+  --ink1:#e6eaf8;--ink2:#8a92b8;--ink3:#454d72;--ink4:#272d48;
+  --red:#e8394a;--vermilion:#ff5147;/* torii red */
+  --indigo:#4a5fff;--indigo2:#6b7fff;/* deep indigo */
+  --gold:#e8c547;--gold2:#f5d86a;
+  --mint:#38d9a9;--sakura:#f472b6;
+  --glow-red:#e8394a20;--glow-indigo:#4a5fff22;
+  --grad:linear-gradient(135deg,#4a5fff,#8b5cf6);
+  --grad-red:linear-gradient(135deg,#e8394a,#ff7043);
+  --nitro-grad:linear-gradient(135deg,#e8c547,#f97316);
+  --admin-grad:linear-gradient(135deg,#e8394a,#9b1dcd);
+  --font:'Inter','Noto Sans JP',sans-serif;--font-jp:'Noto Serif JP',serif;--mono:'JetBrains Mono',monospace;
   --r4:4px;--r6:6px;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--r999:999px;
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--font);background:var(--void);color:var(--ink1);display:flex;height:100vh}
-::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+::-webkit-scrollbar-thumb{background:var(--border3);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--ink3)}
 
-/* ══ SETUP ══ */
+/* Grain overlay */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+
+/* Japanese decorative lines */
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:2px;background:var(--grad-red);opacity:.4;z-index:9998}
+
+/* ━━━━━━━━━━━━━━━━━ SETUP ━━━━━━━━━━━━━━━━━ */
 #setup{position:fixed;inset:0;background:var(--void);display:flex;align-items:center;justify-content:center;z-index:200}
 #setup.gone{display:none}
-.setup-bg{position:absolute;inset:0;background:radial-gradient(ellipse 50% 70% at 30% 50%,#4d7cff0d,transparent),radial-gradient(ellipse 40% 60% at 70% 40%,#7c4dff0a,transparent);pointer-events:none}
-.setup-orb{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,#4d7cff08,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:pulse 4s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6}50%{transform:translate(-50%,-50%) scale(1.15);opacity:1}}
-.setup-card{position:relative;background:var(--panel);border:1px solid var(--border2);border-radius:var(--r20);padding:2.75rem 2.25rem;width:400px;box-shadow:0 0 0 1px #4d7cff10,0 40px 100px #00000080}
-.sc-logo{font-size:2rem;font-weight:800;letter-spacing:-1.5px;margin-bottom:.2rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.sc-tagline{font-size:.82rem;color:var(--ink3);margin-bottom:2.25rem;font-weight:400}
-.field{margin-bottom:1rem}
-.flabel{display:block;font-size:.68rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.4rem}
-.finput{width:100%;background:var(--base);border:1.5px solid var(--border2);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.92rem;font-weight:400;padding:.7rem 1rem;outline:none;transition:border-color .2s,box-shadow .2s}
-.finput:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--glow-blue)}
+.setup-bg{position:absolute;inset:0;background:
+  radial-gradient(ellipse 40% 60% at 20% 50%,#e8394a08,transparent),
+  radial-gradient(ellipse 50% 70% at 80% 40%,#4a5fff0a,transparent);pointer-events:none}
+.setup-card{position:relative;background:var(--panel);border:1px solid var(--border2);border-radius:var(--r20);padding:3rem 2.5rem;width:420px;box-shadow:0 0 0 1px #e8394a08,0 50px 120px #00000090;overflow:hidden}
+.setup-card::before{content:'入';position:absolute;top:-20px;right:-10px;font-family:var(--font-jp);font-size:160px;font-weight:700;color:#e8394a06;pointer-events:none;line-height:1;user-select:none}
+.sc-kana{font-family:var(--font-jp);font-size:.75rem;color:var(--ink3);letter-spacing:.2em;margin-bottom:.4rem;text-transform:none}
+.sc-logo{font-size:2.2rem;font-weight:900;letter-spacing:-2px;margin-bottom:.15rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sc-tagline{font-size:.82rem;color:var(--ink3);margin-bottom:2.5rem;font-weight:400;line-height:1.5}
+.field{margin-bottom:1.1rem}
+.flabel{display:flex;align-items:center;gap:.4rem;font-size:.68rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.45rem}
+.flabel-jp{font-family:var(--font-jp);font-size:.65rem;color:var(--ink4);text-transform:none;letter-spacing:.05em;font-weight:400}
+.finput{width:100%;background:var(--base);border:1.5px solid var(--border2);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.93rem;font-weight:400;padding:.75rem 1rem;outline:none;transition:border-color .2s,box-shadow .2s}
+.finput:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--glow-indigo)}
 .finput::placeholder{color:var(--ink4)}
-.sbtn{width:100%;background:var(--grad);border:none;border-radius:var(--r8);color:#fff;font-family:var(--font);font-size:.95rem;font-weight:700;padding:.85rem;cursor:pointer;letter-spacing:.01em;transition:opacity .2s,transform .1s,box-shadow .2s;box-shadow:0 4px 20px #4d7cff30;margin-top:.25rem}
-.sbtn:hover{opacity:.9;box-shadow:0 6px 30px #4d7cff40}
+.sbtn{width:100%;background:var(--grad);border:none;border-radius:var(--r8);color:#fff;font-family:var(--font);font-size:.95rem;font-weight:700;padding:.9rem;cursor:pointer;letter-spacing:.03em;transition:opacity .2s,transform .1s,box-shadow .2s;box-shadow:0 4px 24px #4a5fff30;margin-top:.3rem}
+.sbtn:hover{opacity:.9;box-shadow:0 8px 32px #4a5fff40}
 .sbtn:active{transform:scale(.98)}
-.snote{margin-top:.85rem;font-size:.72rem;color:var(--ink3);text-align:center}
+.snote{margin-top:.9rem;font-size:.72rem;color:var(--ink4);text-align:center}
+.admin-check-row{display:flex;align-items:center;gap:.55rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);padding:.65rem .9rem;margin-bottom:1rem;cursor:pointer;user-select:none;transition:border-color .15s}
+.admin-check-row:hover{border-color:var(--border3)}
+.admin-check-row input{accent-color:var(--red);width:15px;height:15px;cursor:pointer}
+.admin-check-label{font-size:.82rem;color:var(--ink2);flex:1}
+.admin-tag-preview{font-size:.64rem;background:var(--admin-grad);color:#fff;padding:2px 7px;border-radius:var(--r999);font-weight:800;letter-spacing:.04em}
 
-/* ══ MODALS ══ */
-.moverlay{position:fixed;inset:0;background:#000000a0;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:150}
+/* ━━━━━━━━━━━━━━━━━ MODALS ━━━━━━━━━━━━━━━━━ */
+.moverlay{position:fixed;inset:0;background:#000000b0;backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:150}
 .moverlay.gone{display:none}
-.modal{background:var(--panel);border:1px solid var(--border2);border-radius:var(--r16);padding:1.75rem;width:420px;max-width:95vw;box-shadow:0 0 0 1px #ffffff04,0 32px 80px #00000070;animation:mIn .18s ease}
-@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
-.modal h2{font-size:1.1rem;font-weight:700;letter-spacing:-.3px;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
-.mfield{margin-bottom:.85rem}
-.mlabel{display:block;font-size:.67rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.13em;margin-bottom:.38rem}
-.minput,.mselect{width:100%;background:var(--base);border:1.5px solid var(--border);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.88rem;padding:.62rem .9rem;outline:none;transition:border-color .2s}
-.minput:focus,.mselect:focus{border-color:var(--blue)}
-.minput::placeholder{color:var(--ink4)}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:var(--r16);padding:1.85rem;width:440px;max-width:96vw;box-shadow:0 0 0 1px #ffffff03,0 40px 100px #00000080;animation:mIn .18s ease}
+.modal.wide{width:580px}
+@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal h2{font-size:1.05rem;font-weight:700;letter-spacing:-.2px;margin-bottom:1.35rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--border);padding-bottom:.9rem}
+.modal h2 .jp-sub{font-family:var(--font-jp);font-size:.7rem;color:var(--ink3);font-weight:400;margin-left:auto}
+.mfield{margin-bottom:.9rem}
+.mlabel{display:flex;align-items:center;gap:.35rem;font-size:.67rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.13em;margin-bottom:.4rem}
+.minput,.mselect,.mtextarea{width:100%;background:var(--base);border:1.5px solid var(--border);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.88rem;padding:.65rem .95rem;outline:none;transition:border-color .2s,box-shadow .2s}
+.minput:focus,.mselect:focus,.mtextarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--glow-indigo)}
+.minput::placeholder,.mtextarea::placeholder{color:var(--ink4)}
 .mselect{cursor:pointer}.mselect option{background:var(--panel)}
-.macts{display:flex;gap:.55rem;justify-content:flex-end;margin-top:1.25rem}
-.mbtn{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-family:var(--font);font-size:.83rem;font-weight:500;padding:.5rem 1rem;cursor:pointer;transition:all .15s}
+.mtextarea{resize:vertical;min-height:70px}
+.macts{display:flex;gap:.55rem;justify-content:flex-end;margin-top:1.35rem;padding-top:.9rem;border-top:1px solid var(--border)}
+.mbtn{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-family:var(--font);font-size:.83rem;font-weight:600;padding:.52rem 1.05rem;cursor:pointer;transition:all .15s}
 .mbtn:hover{background:var(--card);color:var(--ink1)}
-.mbtn.primary{background:var(--grad);border-color:transparent;color:#fff;font-weight:600}
-.mbtn.primary:hover{opacity:.9}
+.mbtn.primary{background:var(--grad);border-color:transparent;color:#fff}
+.mbtn.primary:hover{opacity:.88}
 .mbtn.danger{color:var(--red)}
-.mbtn.danger:hover{background:#ff4d6d15;border-color:var(--red)}
-.mtabs{display:flex;gap:.2rem;margin-bottom:1.2rem;background:var(--base);border-radius:var(--r8);padding:.2rem}
-.mtab{flex:1;text-align:center;padding:.4rem;border-radius:var(--r6);font-size:.81rem;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s}
-.mtab.on{background:var(--raised);color:var(--ink1)}
-.ulist{max-height:190px;overflow-y:auto;margin-top:.6rem}
-.uitem{display:flex;align-items:center;gap:.6rem;padding:.4rem .55rem;border-radius:var(--r6);cursor:pointer;transition:background .12s}
-.uitem:hover{background:var(--raised)}
-.uitem.sel{background:#4d7cff15}
-.uitem .uav{width:28px;height:28px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0}
-.uitem .uname{font-size:.84rem;color:var(--ink2)}
-.uitem .uchk{margin-left:auto;color:var(--blue);font-size:.8rem}
-.invite-box{background:var(--base);border:1px solid var(--border2);border-radius:var(--r8);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;margin-top:.5rem}
-.invite-code{font-family:var(--mono);font-size:1.1rem;font-weight:500;color:var(--blue2);flex:1;letter-spacing:.08em}
-.invite-copy{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-family:var(--font);font-size:.78rem;font-weight:600;padding:.35rem .7rem;cursor:pointer;transition:all .15s;white-space:nowrap}
-.invite-copy:hover{background:var(--card);color:var(--ink1)}
-.invite-copy.copied{color:var(--green);border-color:var(--green)}
-.tags-wrap{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
-.tag-chip{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.25rem .7rem;font-size:.72rem;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s;user-select:none}
-.tag-chip.on{background:#4d7cff20;border-color:var(--blue);color:var(--blue2)}
-.badge-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--void)}
+.mbtn.danger:hover{background:var(--glow-red);border-color:var(--red)}
+.mbtn.small{padding:.35rem .7rem;font-size:.76rem}
 
-/* ══ APP ══ */
+/* Tab bar in modals */
+.mtabs{display:flex;gap:0;margin-bottom:1.2rem;border-bottom:1px solid var(--border)}
+.mtab{flex:1;text-align:center;padding:.55rem .5rem;font-size:.8rem;font-weight:600;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.mtab.on{color:var(--indigo2);border-bottom-color:var(--indigo)}
+
+/* Invite box */
+.invite-box{background:var(--base);border:1px solid var(--border2);border-radius:var(--r8);padding:.8rem 1rem;display:flex;align-items:center;gap:.75rem}
+.invite-code{font-family:var(--mono);font-size:1.05rem;font-weight:500;color:var(--indigo2);flex:1;letter-spacing:.12em}
+.invite-copy{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-size:.78rem;font-weight:700;padding:.35rem .75rem;cursor:pointer;transition:all .15s}
+.invite-copy:hover{background:var(--card);color:var(--ink1)}
+.invite-copy.copied{color:var(--mint);border-color:var(--mint)}
+
+/* Tags */
+.tags-wrap{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.5rem}
+.tag-chip{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.24rem .7rem;font-size:.72rem;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s;user-select:none}
+.tag-chip.on{background:#4a5fff1a;border-color:var(--indigo);color:var(--indigo2)}
+
+/* ━━━━━━━━━━━━━━━━━ APP SHELL ━━━━━━━━━━━━━━━━━ */
 #app{display:flex;width:100%;height:100%}
 #app.gone{display:none}
 
-/* RAIL */
-.rail{width:64px;background:var(--void);display:flex;flex-direction:column;align-items:center;padding:.65rem 0;gap:.3rem;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--border)}
-.ri{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-radius .22s cubic-bezier(.34,1.56,.64,1),background .18s,box-shadow .18s;flex-shrink:0;position:relative;font-size:.78rem;font-weight:800;color:var(--ink2);background:var(--panel);font-family:var(--font);overflow:hidden;border:1px solid var(--border)}
-.ri::after{content:'';position:absolute;left:-4px;top:50%;transform:translateY(-50%) scaleY(0);width:4px;height:18px;background:var(--blue);border-radius:0 4px 4px 0;transition:transform .2s,height .2s}
-.ri:hover{border-radius:30%;background:var(--blue);color:#fff;border-color:transparent;box-shadow:0 4px 20px var(--glow-blue)}
-.ri.on{border-radius:30%;background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 24px var(--glow-blue)}
-.ri.on::after{transform:translateY(-50%) scaleY(1);height:26px}
-.ri:hover::after{transform:translateY(-50%) scaleY(1);height:10px}
-.ri-add{color:var(--green);font-size:1.3rem}.ri-add:hover{background:var(--green);color:var(--void)}
-.ri-sep{width:28px;height:1.5px;background:var(--border2);border-radius:2px;flex-shrink:0;margin:.1rem 0}
-.ri-tip{position:fixed;left:72px;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);padding:.3rem .65rem;font-size:.76rem;font-weight:600;color:var(--ink1);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:500;box-shadow:0 4px 12px #00000050}
+/* ━━━ RAIL ━━━ */
+.rail{width:62px;background:var(--void);display:flex;flex-direction:column;align-items:center;padding:.6rem 0;gap:.28rem;flex-shrink:0;overflow-y:auto;overflow-x:visible;border-right:1px solid var(--border)}
+.ri{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-radius .2s cubic-bezier(.34,1.56,.64,1),background .15s,box-shadow .15s;flex-shrink:0;position:relative;font-size:.75rem;font-weight:800;color:var(--ink2);background:var(--panel);font-family:var(--font);overflow:hidden;border:1px solid var(--border2)}
+.ri::before{content:'';position:absolute;left:-4px;top:50%;transform:translateY(-50%) scaleY(0);width:3px;height:16px;background:var(--vermilion);border-radius:0 3px 3px 0;transition:transform .2s,height .2s}
+.ri:hover{border-radius:28%;background:var(--overlay);color:var(--ink1);border-color:var(--border3)}
+.ri.on{border-radius:28%;background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 20px var(--glow-indigo)}
+.ri.on::before{transform:translateY(-50%) scaleY(1);height:24px}
+.ri:hover::before{transform:translateY(-50%) scaleY(1);height:10px}
+.ri.danger-ri{border-color:#e8394a30}
+.ri.danger-ri:hover{background:var(--red);color:#fff;border-color:transparent;box-shadow:0 4px 20px var(--glow-red)}
+.ri-sep{width:28px;height:1px;background:var(--border2);border-radius:1px;flex-shrink:0}
+/* Tooltip */
+.ri-tip{position:fixed;left:70px;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);padding:.3rem .7rem;font-size:.76rem;font-weight:600;color:var(--ink1);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:500;box-shadow:0 4px 16px #00000060}
 .ri:hover .ri-tip{opacity:1}
-.sv-icon-text{font-size:.9rem;line-height:1}
-/* Nitro rail button */
-.ri-nitro{background:linear-gradient(135deg,#2a1a00,#1a1500)!important;border-color:#ffc84d40!important}
-.ri-nitro:hover{background:var(--nitro-grad)!important;border-color:transparent!important;box-shadow:0 4px 20px #ffc84d30!important}
-.ri-nitro.on{background:var(--nitro-grad)!important;border-color:transparent!important;box-shadow:0 4px 24px #ffc84d30!important}
+.sv-icon{font-size:.88rem;line-height:1}
+.ri-nitro{background:linear-gradient(135deg,#1e1400,#140f00)!important;border-color:#e8c54730!important}
+.ri-nitro:hover{background:var(--nitro-grad)!important;border-color:transparent!important}
+.ri-nitro.on{background:var(--nitro-grad)!important;border-color:transparent!important}
+.sv-notif{position:absolute;bottom:0;right:0;width:9px;height:9px;background:var(--red);border-radius:50%;border:2px solid var(--void);display:none}
+.sv-notif.show{display:block}
 
-/* CHANNEL PANEL */
-.cpanel{width:216px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.cph{padding:.85rem .9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.4rem}
-.cph-name{font-size:.92rem;font-weight:700;letter-spacing:-.3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cph-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:3px 5px;border-radius:var(--r4);font-size:.9rem;line-height:1;transition:color .12s,background .12s}
+/* ━━━ CHANNEL PANEL ━━━ */
+.cpanel{width:220px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.cph{padding:.85rem .95rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.4rem}
+.cph-name{font-size:.9rem;font-weight:700;letter-spacing:-.3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cph-kana{font-family:var(--font-jp);font-size:.6rem;color:var(--ink4);display:block;margin-top:1px;letter-spacing:.08em}
+.cph-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:4px 6px;border-radius:var(--r4);font-size:.85rem;line-height:1;transition:color .12s,background .12s;flex-shrink:0}
 .cph-btn:hover{color:var(--ink1);background:var(--raised)}
-.cp-section{padding:.75rem .7rem .25rem;font-size:.63rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.15em;display:flex;align-items:center;justify-content:space-between}
-.cp-add{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.95rem;line-height:1;padding:2px 4px;border-radius:3px;transition:color .12s}
+.cp-section{padding:.7rem .8rem .2rem;font-size:.62rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.16em;display:flex;align-items:center;justify-content:space-between}
+.cp-add{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.95rem;padding:2px 4px;border-radius:3px;transition:color .12s;line-height:1}
 .cp-add:hover{color:var(--ink1)}
-.citem{display:flex;align-items:center;gap:.4rem;margin:1px .45rem;padding:.38rem .6rem;border-radius:var(--r6);cursor:pointer;font-size:.85rem;color:var(--ink3);transition:background .12s,color .12s;position:relative}
-.citem .ci-ico{font-size:.8rem;opacity:.5;flex-shrink:0;width:14px;text-align:center}
+.ch-group{margin-bottom:.3rem}
+.citem{display:flex;align-items:center;gap:.4rem;margin:1px .42rem;padding:.38rem .65rem;border-radius:var(--r6);cursor:pointer;font-size:.84rem;color:var(--ink3);transition:background .12s,color .12s;position:relative;user-select:none}
+.citem .ci-ico{font-size:.78rem;opacity:.5;flex-shrink:0;width:14px;text-align:center}
 .citem .ci-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.citem.on{background:#4d7cff18;color:var(--blue2)}
+.citem.on{background:#4a5fff18;color:var(--indigo2)}
 .citem:hover:not(.on){background:var(--raised);color:var(--ink2)}
-.citem .ci-del{display:none;background:none;border:none;color:var(--red);cursor:pointer;font-size:.7rem;padding:2px 3px;opacity:.7}
-.citem:hover .ci-del{display:block}
-.cpanel-spacer{flex:1}
-.userbar{padding:.65rem .85rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.55rem}
-.ub-av{width:32px;height:32px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0;position:relative}
-.ub-av::after{content:'';position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--panel)}
-.ub-av.nitro-av{background:var(--nitro-grad)!important}
+.ci-lock{font-size:.6rem;color:var(--ink4);margin-left:auto;flex-shrink:0}
+.ci-acts{display:none;gap:.15rem;margin-left:auto}
+.citem:hover .ci-acts{display:flex}
+.ci-act-btn{background:none;border:none;color:var(--ink4);cursor:pointer;font-size:.7rem;padding:2px 3px;border-radius:3px;transition:color .12s;line-height:1}
+.ci-act-btn:hover{color:var(--ink1)}
+.ci-act-btn.del-btn:hover{color:var(--red)}
+.cpanel-scroll{flex:1;overflow-y:auto;padding-bottom:.5rem}
+/* User bar */
+.userbar{padding:.65rem .9rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.55rem;flex-shrink:0}
+.ub-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0;position:relative;background:var(--grad);color:#fff}
+.ub-av::after{content:'';position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;border:2px solid var(--panel);background:var(--mint)}
+.ub-av.nitro-av{background:var(--nitro-grad)}
+.ub-av.admin-av{background:var(--admin-grad)}
 .ub-info{flex:1;min-width:0}
-.ub-n{font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ub-s{font-size:.67rem;color:var(--ink3)}
-.nitro-badge{font-size:.6rem;background:var(--nitro-grad);color:#000;padding:1px 5px;border-radius:var(--r999);font-weight:800;letter-spacing:.05em;margin-left:.3rem}
-.ub-out{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.88rem;padding:3px 5px;border-radius:var(--r4);transition:color .12s}
+.ub-n{font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:.3rem}
+.ub-s{font-size:.66rem;color:var(--ink3)}
+.ub-out{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.85rem;padding:4px 5px;border-radius:var(--r4);transition:color .12s}
 .ub-out:hover{color:var(--red)}
+/* Badges inline */
+.badge{font-size:.58rem;padding:1px 5px;border-radius:var(--r999);font-weight:800;letter-spacing:.04em;white-space:nowrap;flex-shrink:0}
+.badge-nitro{background:var(--nitro-grad);color:#000}
+.badge-admin{background:var(--admin-grad);color:#fff}
+.badge-owner{background:var(--grad-red);color:#fff}
+.badge-role{color:#fff;padding:1px 5px}
 
-/* MAIN */
+/* ━━━ MAIN AREA ━━━ */
 .main{flex:1;display:flex;flex-direction:column;background:var(--surface);min-width:0}
-.chdr{padding:.78rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.55rem;flex-shrink:0;background:var(--surface)}
-.chdr-ico{color:var(--ink3);font-size:.95rem}
-.chdr-name{font-size:.92rem;font-weight:700;letter-spacing:-.2px}
+.chdr{padding:.78rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.55rem;flex-shrink:0;background:var(--surface)}
+.chdr-ico{color:var(--ink3);font-size:.9rem}
+.chdr-name{font-size:.9rem;font-weight:700;letter-spacing:-.2px}
 .chdr-div{width:1px;height:14px;background:var(--border2);margin:0 .1rem}
-.chdr-desc{font-size:.78rem;color:var(--ink2)}
-.chdr-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
-.online-pill{display:flex;align-items:center;gap:.3rem;font-size:.73rem;color:var(--ink3);font-weight:500}
-.od{width:6px;height:6px;background:var(--green);border-radius:50%}
-.sv-tags-row{display:flex;gap:.35rem;flex-wrap:wrap;padding:.4rem 1.2rem .1rem;flex-shrink:0;border-bottom:1px solid var(--border)}
-.sv-tag{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.18rem .6rem;font-size:.67rem;font-weight:700;color:var(--ink3);letter-spacing:.04em}
+.chdr-desc{font-size:.77rem;color:var(--ink2)}
+.chdr-right{margin-left:auto;display:flex;align-items:center;gap:.7rem}
+.hdr-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:.3rem .45rem;border-radius:var(--r6);font-size:.85rem;transition:color .12s,background .12s;line-height:1}
+.hdr-btn:hover{color:var(--ink1);background:var(--raised)}
+.online-pill{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:var(--ink3);font-weight:500}
+.od{width:6px;height:6px;background:var(--mint);border-radius:50%}
+.sv-tags-row{display:flex;gap:.3rem;flex-wrap:wrap;padding:.4rem 1.25rem .1rem;flex-shrink:0;border-bottom:1px solid var(--border)}
 .sv-tags-row:empty{display:none}
-
-.msgs{flex:1;overflow-y:auto;padding:.6rem 0 .2rem}
-.daydiv{display:flex;align-items:center;gap:.65rem;padding:.55rem 1.2rem;font-size:.7rem;color:var(--ink3);font-family:var(--mono)}
+.sv-tag{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.17rem .6rem;font-size:.66rem;font-weight:700;color:var(--ink3);letter-spacing:.04em}
+/* Messages */
+.msgs{flex:1;overflow-y:auto;padding:.6rem 0 .25rem}
+.daydiv{display:flex;align-items:center;gap:.65rem;padding:.6rem 1.25rem;font-size:.68rem;color:var(--ink3);font-family:var(--mono)}
 .daydiv::before,.daydiv::after{content:'';flex:1;height:1px;background:var(--border)}
-.msg{display:flex;gap:.8rem;padding:.28rem 1.2rem;transition:background .08s;position:relative}
-.msg:hover{background:#ffffff04}
-.mav{width:34px;height:34px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;margin-top:1px}
+.msg{display:flex;gap:.8rem;padding:.3rem 1.25rem;transition:background .08s;position:relative}
+.msg:hover{background:#ffffff03}
+.mav{width:34px;height:34px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;margin-top:1px;background:var(--grad)}
 .mav.hid{visibility:hidden}
 .mbody{flex:1;min-width:0}
-.mmeta{display:flex;align-items:baseline;gap:.45rem;margin-bottom:.1rem}
-.mauthor{font-size:.86rem;font-weight:700;color:#8faaff}
-.mauthor.me{color:#7dcfff}
+.mmeta{display:flex;align-items:baseline;gap:.4rem;margin-bottom:.1rem;flex-wrap:wrap}
+.mauthor{font-size:.85rem;font-weight:700;color:#8faaff}
+.mauthor.me{color:#7bd4c5}
 .mauthor.nitro-user{background:var(--nitro-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.mtime{font-size:.68rem;color:var(--ink3);font-family:var(--mono)}
-.mtext{font-size:.875rem;line-height:1.55;color:var(--ink1);word-break:break-word;white-space:pre-wrap}
+.mauthor.admin-user{background:var(--admin-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mtime{font-size:.67rem;color:var(--ink4);font-family:var(--mono)}
+.mtext{font-size:.875rem;line-height:1.58;color:var(--ink1);word-break:break-word;white-space:pre-wrap}
 .msg.grouped{padding-top:.06rem}
 .msg.grouped .mmeta{display:none}
-.gts{position:absolute;left:1.3rem;top:50%;transform:translateY(-50%);font-size:.6rem;color:transparent;font-family:var(--mono);transition:color .12s;width:34px;text-align:center}
+.gts{position:absolute;left:1.35rem;top:50%;transform:translateY(-50%);font-size:.6rem;color:transparent;font-family:var(--mono);transition:color .12s;width:34px;text-align:center}
 .msg.grouped:hover .gts{color:var(--ink3)}
-.sysmsg{text-align:center;font-size:.76rem;color:var(--ink3);padding:.4rem 1rem;font-style:italic}
-
+.sysmsg{text-align:center;font-size:.75rem;color:var(--ink3);padding:.45rem 1rem;font-style:italic}
+/* Channel welcome */
+.ch-welcome{padding:1.2rem 1.25rem 0.4rem;border-bottom:1px solid var(--border);margin-bottom:.4rem}
+.ch-welcome-ico{font-size:2rem;margin-bottom:.4rem}
+.ch-welcome-title{font-size:1rem;font-weight:800;letter-spacing:-.3px;margin-bottom:.2rem}
+.ch-welcome-desc{font-size:.8rem;color:var(--ink3);line-height:1.5}
 /* Reply bar */
-.reply-bar{background:var(--raised);border-left:3px solid var(--blue);margin-bottom:.15rem;padding:.25rem .6rem;border-radius:0 var(--r4) var(--r4) 0;font-size:.75rem;color:var(--ink2);display:flex;align-items:center;gap:.4rem}
-.reply-bar .rb-author{color:var(--blue2);font-weight:600}
-.reply-bar .rb-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px}
-
-/* Message actions on hover */
-.msg-actions{position:absolute;right:1rem;top:-10px;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);display:none;gap:.1rem;padding:.18rem .25rem;z-index:10;box-shadow:0 4px 16px #00000060}
+.reply-bar{background:var(--raised);border-left:3px solid var(--indigo);margin-bottom:.18rem;padding:.25rem .65rem;border-radius:0 var(--r4) var(--r4) 0;font-size:.74rem;color:var(--ink2);display:flex;align-items:center;gap:.4rem;cursor:pointer}
+.reply-bar:hover{background:var(--card)}
+.rb-author{color:var(--indigo2);font-weight:700}
+.rb-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px}
+/* Message actions */
+.msg-actions{position:absolute;right:1rem;top:-11px;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);display:none;gap:.08rem;padding:.18rem .28rem;z-index:10;box-shadow:0 4px 20px #00000070}
 .msg:hover .msg-actions{display:flex}
-.ma-btn{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.82rem;padding:.2rem .32rem;border-radius:var(--r4);transition:color .12s,background .12s;line-height:1}
+.ma-btn{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.82rem;padding:.22rem .34rem;border-radius:var(--r4);transition:color .12s,background .12s;line-height:1}
 .ma-btn:hover{color:var(--ink1);background:var(--card)}
-
+.ma-btn.red:hover{color:var(--red)}
 /* Reactions */
-.reactions{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.22rem}
-.reaction{display:inline-flex;align-items:center;gap:.22rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.18rem .5rem;font-size:.75rem;cursor:pointer;transition:all .12s;user-select:none}
-.reaction:hover,.reaction.mine{background:#4d7cff18;border-color:var(--blue)}
-.reaction .rc{font-size:.85rem}
-.reaction .rn{color:var(--ink2);font-weight:600;min-width:8px}
-
+.reactions{display:flex;flex-wrap:wrap;gap:.22rem;margin-top:.24rem}
+.reaction{display:inline-flex;align-items:center;gap:.2rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.17rem .52rem;font-size:.74rem;cursor:pointer;transition:all .12s;user-select:none}
+.reaction:hover,.reaction.mine{background:#4a5fff18;border-color:var(--indigo)}
+.rc{font-size:.84rem}
+.rn{color:var(--ink2);font-weight:700;min-width:8px}
 /* Emoji picker */
-.emoji-picker{position:absolute;bottom:100%;right:0;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r12);padding:.6rem;display:flex;flex-wrap:wrap;gap:.2rem;width:220px;z-index:50;box-shadow:0 8px 32px #00000070;animation:mIn .12s ease}
-.ep-emoji{font-size:1.1rem;cursor:pointer;padding:.2rem .25rem;border-radius:var(--r4);transition:background .1s;line-height:1}
+.emoji-picker{position:absolute;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r12);padding:.6rem;display:flex;flex-wrap:wrap;gap:.22rem;width:228px;z-index:50;box-shadow:0 8px 36px #00000080;animation:mIn .12s ease}
+.ep-emoji{font-size:1.1rem;cursor:pointer;padding:.2rem .26rem;border-radius:var(--r4);transition:background .1s;line-height:1}
 .ep-emoji:hover{background:var(--card)}
-
-/* Image in message */
-.msg-img{max-width:320px;max-height:260px;border-radius:var(--r8);margin-top:.3rem;cursor:pointer;object-fit:cover;display:block;border:1px solid var(--border2)}
-.msg-img:hover{opacity:.9}
-
-/* Voice message */
-.voice-msg{display:flex;align-items:center;gap:.55rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.4rem .8rem .4rem .5rem;margin-top:.3rem;width:fit-content;min-width:200px}
-.voice-play{width:28px;height:28px;border-radius:50%;background:var(--blue);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;transition:background .12s}
-.voice-play:hover{background:var(--blue2)}
+/* Image */
+.msg-img{max-width:340px;max-height:280px;border-radius:var(--r8);margin-top:.35rem;cursor:pointer;object-fit:cover;display:block;border:1px solid var(--border2)}
+.msg-img:hover{opacity:.88}
+/* Voice */
+.voice-msg{display:flex;align-items:center;gap:.55rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r999);padding:.38rem .85rem .38rem .5rem;margin-top:.32rem;width:fit-content;min-width:200px}
+.voice-play{width:28px;height:28px;border-radius:50%;background:var(--indigo);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;transition:background .12s}
+.voice-play:hover{background:var(--indigo2)}
 .voice-waveform{flex:1;height:22px;display:flex;align-items:center;gap:1.5px}
-.wv-bar{width:2.5px;border-radius:2px;background:var(--blue);opacity:.6;transition:height .1s}
-.voice-dur{font-size:.7rem;color:var(--ink3);font-family:var(--mono);flex-shrink:0}
-
-/* Reply indicator above input */
-#reply-indicator{background:var(--raised);border-left:3px solid var(--blue);padding:.35rem .9rem;font-size:.78rem;color:var(--ink2);display:none;align-items:center;gap:.5rem;flex-shrink:0}
-#reply-indicator .ri-name{color:var(--blue2);font-weight:600}
-#reply-indicator .ri-close{background:none;border:none;color:var(--ink3);cursor:pointer;margin-left:auto;font-size:.9rem;padding:2px 4px;border-radius:3px}
-#reply-indicator .ri-close:hover{color:var(--red)}
-
-.typing{padding:.18rem 1.2rem .1rem;font-size:.74rem;color:var(--ink3);min-height:20px;font-style:italic}
-.inputzone{padding:.55rem 1.2rem .95rem;flex-shrink:0}
-.inputbox{display:flex;align-items:flex-end;gap:.45rem;background:var(--raised);border:1.5px solid var(--border2);border-radius:var(--r12);padding:.55rem .7rem;transition:border-color .18s,box-shadow .18s}
-.inputbox:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--glow-blue)}
-#msginput{flex:1;background:none;border:none;outline:none;color:var(--ink1);font-family:var(--font);font-size:.88rem;line-height:1.5;resize:none;max-height:150px;min-height:22px}
-#msginput::placeholder{color:var(--ink3)}
-.input-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:.3rem;border-radius:var(--r6);font-size:1rem;transition:color .12s,background .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wv-bar{width:2.5px;border-radius:2px;background:var(--indigo);opacity:.55}
+.voice-dur{font-size:.7rem;color:var(--ink3);font-family:var(--mono)}
+/* Reply indicator */
+#reply-indicator{background:var(--raised);border-left:3px solid var(--indigo);padding:.38rem .95rem;font-size:.78rem;color:var(--ink2);display:none;align-items:center;gap:.5rem;flex-shrink:0}
+#ri-name-label{color:var(--indigo2);font-weight:700}
+.ri-close-btn{background:none;border:none;color:var(--ink3);cursor:pointer;margin-left:auto;font-size:.85rem;padding:2px 4px;border-radius:3px;line-height:1}
+.ri-close-btn:hover{color:var(--red)}
+.typing{padding:.18rem 1.25rem .1rem;font-size:.73rem;color:var(--ink3);min-height:20px;font-style:italic;font-family:var(--font-jp)}
+/* Input zone */
+.inputzone{padding:.5rem 1.25rem .95rem;flex-shrink:0}
+.inputbox{display:flex;align-items:flex-end;gap:.42rem;background:var(--raised);border:1.5px solid var(--border2);border-radius:var(--r12);padding:.5rem .65rem;transition:border-color .18s,box-shadow .18s}
+.inputbox:focus-within{border-color:var(--indigo);box-shadow:0 0 0 3px var(--glow-indigo)}
+#msginput{flex:1;background:none;border:none;outline:none;color:var(--ink1);font-family:var(--font);font-size:.875rem;line-height:1.52;resize:none;max-height:150px;min-height:22px}
+#msginput::placeholder{color:var(--ink4)}
+.input-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:.3rem;border-radius:var(--r6);font-size:1rem;transition:color .12s,background .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
 .input-btn:hover{color:var(--ink1);background:var(--card)}
-.sendbtn{background:var(--grad);border:none;border-radius:var(--r8);color:#fff;cursor:pointer;padding:.38rem .52rem;display:flex;align-items:center;justify-content:center;transition:opacity .15s,transform .1s;flex-shrink:0}
+.sendbtn{background:var(--grad);border:none;border-radius:var(--r8);color:#fff;cursor:pointer;padding:.38rem .5rem;display:flex;align-items:center;justify-content:center;transition:opacity .15s,transform .1s;flex-shrink:0}
 .sendbtn:hover{opacity:.85}
 .sendbtn:active{transform:scale(.9)}
 .sendbtn svg{width:16px;height:16px}
-.sendbtn:disabled{opacity:.25;cursor:default}
-
-/* Voice record button */
-.voice-rec-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:.3rem;border-radius:var(--r6);font-size:1rem;transition:all .12s;flex-shrink:0}
-.voice-rec-btn:hover{color:var(--red);background:#ff4d6d15}
+.sendbtn:disabled{opacity:.2;cursor:default}
+.voice-rec-btn{color:var(--ink3)}
 .voice-rec-btn.recording{color:var(--red);animation:recPulse 1s ease-in-out infinite}
-@keyframes recPulse{0%,100%{opacity:1}50%{opacity:.4}}
-
-/* Edit message input */
-.edit-input{width:100%;background:var(--base);border:1.5px solid var(--blue);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.875rem;padding:.4rem .65rem;outline:none;resize:none;line-height:1.5;margin-top:.2rem}
-.edit-acts{display:flex;gap:.35rem;margin-top:.3rem;font-size:.72rem;color:var(--ink3)}
+@keyframes recPulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* Edit */
+.edit-input{width:100%;background:var(--base);border:1.5px solid var(--indigo);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.875rem;padding:.4rem .65rem;outline:none;resize:none;line-height:1.52;margin-top:.2rem}
+.edit-acts{display:flex;gap:.35rem;margin-top:.32rem;font-size:.72rem}
 .edit-acts button{background:none;border:none;color:var(--ink3);cursor:pointer;font-family:var(--font);font-size:.72rem;padding:2px 6px;border-radius:3px;transition:color .12s}
-.edit-acts .save-edit{color:var(--blue2)}
+.edit-acts .save-edit{color:var(--indigo2)}
 .edit-acts button:hover{color:var(--ink1)}
-.edited-tag{font-size:.65rem;color:var(--ink3);margin-left:.3rem;font-style:italic}
+.edited-tag{font-size:.63rem;color:var(--ink4);margin-left:.3rem;font-style:italic}
+/* Locked channel notice */
+.locked-notice{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.55rem;color:var(--ink3);padding:2rem}
+.locked-notice .lico{font-size:2rem;opacity:.4}
+.locked-notice .lt{font-size:.9rem;font-weight:700;color:var(--ink2)}
+.locked-notice .ls{font-size:.78rem;text-align:center;max-width:260px;line-height:1.5}
 
-/* Members */
-.mpanel{width:184px;background:var(--panel);border-left:1px solid var(--border);padding:.9rem .7rem;flex-shrink:0;overflow-y:auto}
-.mp-title{font-size:.63rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.6rem}
-.mitem{display:flex;align-items:center;gap:.45rem;padding:.27rem .38rem;border-radius:var(--r6);cursor:default;transition:background .12s}
+/* ━━━ MEMBERS PANEL ━━━ */
+.mpanel{width:190px;background:var(--panel);border-left:1px solid var(--border);flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column}
+.mpanel.gone{display:none}
+.mp-section{padding:.85rem .75rem .3rem;font-size:.62rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.15em}
+.mitem{display:flex;align-items:center;gap:.45rem;padding:.3rem .55rem;border-radius:var(--r6);cursor:pointer;transition:background .12s;margin:1px .35rem}
 .mitem:hover{background:var(--raised)}
-.mitem-av{width:24px;height:24px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:800;flex-shrink:0;position:relative}
-.mitem-av::after{content:'';position:absolute;bottom:-1px;right:-1px;width:7px;height:7px;background:var(--green);border-radius:50%;border:2px solid var(--panel)}
-.mitem-av.nitro-av{background:var(--nitro-grad)!important}
-.mitem-name{font-size:.77rem;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mitem-name.me{color:#8faaff}
+.mitem-av{width:26px;height:26px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:800;flex-shrink:0;position:relative;background:var(--grad)}
+.mitem-av::after{content:'';position:absolute;bottom:-1px;right:-1px;width:7px;height:7px;background:var(--mint);border-radius:50%;border:2px solid var(--panel)}
+.mitem-av.nitro-av{background:var(--nitro-grad)}
+.mitem-av.admin-av{background:var(--admin-grad)}
+.mitem-name{font-size:.77rem;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mitem-name.me{color:var(--indigo2)}
 
-/* Empty */
-.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;color:var(--ink3)}
-.empty-ico{font-size:2.2rem;opacity:.3}
+/* ━━━ EMPTY / WELCOME ━━━ */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;color:var(--ink3);padding:2rem}
+.empty-jp{font-family:var(--font-jp);font-size:2.5rem;opacity:.08;letter-spacing:.1em;position:absolute;pointer-events:none}
+.empty-ico{font-size:2.5rem;opacity:.28}
 .empty-t{font-size:1rem;font-weight:700;color:var(--ink2);letter-spacing:-.2px}
-.empty-s{font-size:.8rem;text-align:center;max-width:240px;line-height:1.5}
+.empty-s{font-size:.8rem;text-align:center;max-width:240px;line-height:1.55}
 
-/* Friends */
+/* ━━━ FRIENDS VIEW ━━━ */
 .fpanel{flex:1;display:flex;flex-direction:column;background:var(--surface);min-width:0}
-.fp-hdr{padding:.78rem 1.2rem;border-bottom:1px solid var(--border);font-size:.92rem;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:.5rem}
-.fp-tabs{display:flex;gap:.2rem;padding:0 1.2rem;border-bottom:1px solid var(--border);flex-shrink:0}
-.fp-tab{padding:.6rem .85rem;font-size:.82rem;font-weight:600;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;margin-bottom:-1px}
-.fp-tab.on{color:var(--blue2);border-color:var(--blue)}
-.fp-body{flex:1;overflow-y:auto;padding:1rem 1.2rem}
-.fp-section-title{font-size:.68rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.13em;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
-.fitem{display:flex;align-items:center;gap:.65rem;padding:.55rem .7rem;border-radius:var(--r8);background:var(--raised);border:1px solid var(--border);margin-bottom:.4rem;transition:border-color .15s}
+.fp-hdr{padding:.78rem 1.25rem;border-bottom:1px solid var(--border);font-size:.9rem;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:.5rem}
+.fp-tabs{display:flex;gap:0;padding:0 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.fp-tab{padding:.6rem .9rem;font-size:.81rem;font-weight:600;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;margin-bottom:-1px}
+.fp-tab.on{color:var(--indigo2);border-color:var(--indigo)}
+.fp-body{flex:1;overflow-y:auto;padding:1rem 1.25rem}
+.fp-section-title{font-size:.67rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.13em;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.fitem{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border-radius:var(--r8);background:var(--raised);border:1px solid var(--border);margin-bottom:.4rem;transition:border-color .15s}
 .fitem:hover{border-color:var(--border2)}
-.fitem-av{width:36px;height:36px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;position:relative}
-.fitem-av.online::after{content:'';position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--raised)}
+.fitem-av{width:36px;height:36px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;position:relative;background:var(--grad)}
+.fitem-av.online::after{content:'';position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;background:var(--mint);border-radius:50%;border:2px solid var(--raised)}
 .fitem-info{flex:1;min-width:0}
 .fitem-name{font-size:.88rem;font-weight:700}
 .fitem-status{font-size:.72rem;color:var(--ink3)}
 .fitem-acts{display:flex;gap:.35rem}
-.fact-btn{background:var(--card);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-size:.73rem;font-weight:600;padding:.3rem .6rem;cursor:pointer;transition:all .12s;white-space:nowrap}
+.fact-btn{background:var(--card);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-size:.73rem;font-weight:600;padding:.3rem .62rem;cursor:pointer;transition:all .12s}
 .fact-btn:hover{background:var(--overlay);color:var(--ink1)}
-.fact-btn.g:hover{background:#00e5a015;color:var(--green);border-color:var(--green)}
-.fact-btn.r:hover{background:#ff4d6d15;color:var(--red);border-color:var(--red)}
-.fact-btn.dm-btn{color:var(--blue2)}
+.fact-btn.g:hover{background:#38d9a915;color:var(--mint);border-color:var(--mint)}
+.fact-btn.r:hover{background:var(--glow-red);color:var(--red);border-color:var(--red)}
 .add-friend-row{display:flex;gap:.5rem;margin-bottom:1.25rem}
-.add-friend-input{flex:1;background:var(--raised);border:1.5px solid var(--border2);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.88rem;padding:.6rem .9rem;outline:none;transition:border-color .2s}
-.add-friend-input:focus{border-color:var(--blue)}
+.add-friend-input{flex:1;background:var(--raised);border:1.5px solid var(--border2);border-radius:var(--r8);color:var(--ink1);font-family:var(--font);font-size:.88rem;padding:.62rem .9rem;outline:none;transition:border-color .2s}
+.add-friend-input:focus{border-color:var(--indigo)}
 .add-friend-input::placeholder{color:var(--ink3)}
-.add-friend-btn{background:var(--grad);border:none;border-radius:var(--r8);color:#fff;font-family:var(--font);font-size:.83rem;font-weight:700;padding:.6rem 1rem;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.add-friend-btn{background:var(--grad);border:none;border-radius:var(--r8);color:#fff;font-family:var(--font);font-size:.83rem;font-weight:700;padding:.62rem 1rem;cursor:pointer;transition:opacity .15s}
 .add-friend-btn:hover{opacity:.85}
 
-/* Context menu */
-.ctx{position:fixed;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);padding:.3rem;min-width:155px;z-index:400;box-shadow:0 12px 40px #00000070;animation:mIn .1s ease}
-.ctx.gone{display:none}
-.cxi{padding:.42rem .7rem;border-radius:var(--r6);font-size:.82rem;cursor:pointer;color:var(--ink2);transition:background .1s,color .1s}
-.cxi:hover{background:var(--card);color:var(--ink1)}
-.cxi.red{color:var(--red)}
-.cxi.red:hover{background:#ff4d6d12}
+/* ━━━ ADMIN PANEL ━━━ */
+.admin-panel{flex:1;display:flex;flex-direction:column;background:var(--surface);min-width:0;overflow-y:auto}
+.admin-hero{padding:1.75rem 1.75rem 1rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#1a0008 0%,var(--surface) 100%);position:relative;overflow:hidden}
+.admin-hero::before{content:'管理';font-family:var(--font-jp);position:absolute;right:-5px;top:-10px;font-size:100px;font-weight:900;color:#e8394a06;pointer-events:none;line-height:1}
+.admin-hero-title{font-size:1.3rem;font-weight:900;letter-spacing:-.5px;background:var(--admin-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.25rem}
+.admin-hero-sub{font-size:.8rem;color:var(--ink3);line-height:1.5}
+.admin-tabs{display:flex;gap:0;padding:0 1.75rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.admin-tab{padding:.65rem 1rem;font-size:.81rem;font-weight:600;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px}
+.admin-tab.on{color:var(--red);border-color:var(--red)}
+.admin-body{padding:1.5rem 1.75rem;flex:1}
+/* Members table */
+.members-table{width:100%;border-collapse:collapse}
+.members-table th{font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;color:var(--ink3);padding:.55rem .75rem;text-align:left;border-bottom:1px solid var(--border2)}
+.members-table td{padding:.6rem .75rem;font-size:.84rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.members-table tr:hover td{background:#ffffff03}
+.member-av-cell{display:flex;align-items:center;gap:.55rem}
+.ma-av{width:28px;height:28px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;background:var(--grad);flex-shrink:0}
+.ma-av.nitro-av{background:var(--nitro-grad)}
+.ma-av.admin-av{background:var(--admin-grad)}
+.member-name-cell{font-weight:600}
+.admin-action-btn{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink2);font-size:.72rem;font-weight:600;padding:.28rem .6rem;cursor:pointer;transition:all .12s;white-space:nowrap}
+.admin-action-btn:hover{background:var(--card);color:var(--ink1)}
+.admin-action-btn.kick-btn:hover{background:var(--glow-red);color:var(--red);border-color:var(--red)}
+.admin-action-btn.ban-btn:hover{background:var(--glow-red);color:var(--red);border-color:var(--red)}
+.admin-action-btn.role-btn{color:var(--indigo2)}
+.admin-action-btn.role-btn:hover{background:#4a5fff15;border-color:var(--indigo)}
+.td-actions{display:flex;gap:.35rem;flex-wrap:wrap}
+/* Roles */
+.roles-list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.25rem}
+.role-card{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);padding:.75rem .9rem;display:flex;align-items:center;gap:.65rem;transition:border-color .15s}
+.role-card:hover{border-color:var(--border3)}
+.role-color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.role-name{font-size:.88rem;font-weight:700;flex:1}
+.role-perms{font-size:.72rem;color:var(--ink3);flex:1}
+.role-member-count{font-size:.72rem;color:var(--ink3);margin-right:.5rem}
+.add-role-btn{background:var(--raised);border:1.5px dashed var(--border2);border-radius:var(--r8);padding:.65rem;text-align:center;font-size:.83rem;color:var(--ink3);cursor:pointer;transition:all .15s}
+.add-role-btn:hover{border-color:var(--indigo);color:var(--indigo2);background:#4a5fff08}
+/* Bans */
+.ban-item{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);margin-bottom:.45rem}
+.ban-name{flex:1;font-size:.88rem;font-weight:600;color:var(--red)}
+.ban-reason{font-size:.75rem;color:var(--ink3);flex:2}
+.unban-btn{background:none;border:1px solid var(--border2);border-radius:var(--r6);color:var(--ink3);font-size:.74rem;font-weight:600;padding:.28rem .65rem;cursor:pointer;transition:all .12s}
+.unban-btn:hover{border-color:var(--mint);color:var(--mint)}
+/* Perms grid */
+.perms-section{margin-bottom:1.25rem}
+.perm-channel-title{font-size:.82rem;font-weight:700;margin-bottom:.55rem;color:var(--ink2);display:flex;align-items:center;gap:.4rem}
+.perm-role-rows{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);overflow:hidden}
+.perm-row{display:flex;align-items:center;gap:.75rem;padding:.55rem .85rem;border-bottom:1px solid var(--border);transition:background .1s}
+.perm-row:last-child{border-bottom:none}
+.perm-row:hover{background:var(--card)}
+.perm-role-name{font-size:.82rem;color:var(--ink2);flex:1;display:flex;align-items:center;gap:.4rem}
+.perm-toggle{display:flex;gap:.55rem}
+.perm-btn{background:none;border:1px solid var(--border2);border-radius:var(--r4);font-size:.7rem;font-weight:700;padding:.2rem .5rem;cursor:pointer;transition:all .12s;color:var(--ink3)}
+.perm-btn.allow{border-color:var(--mint);color:var(--mint);background:#38d9a910}
+.perm-btn.deny{border-color:var(--red);color:var(--red);background:var(--glow-red)}
+/* Channel settings modal */
+.ch-settings-section{margin-bottom:1.1rem}
+.ch-settings-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;color:var(--ink3);margin-bottom:.5rem}
 
-/* ══ NITRO PAGE ══ */
+/* ━━━ NITRO ━━━ */
 .nitro-page{flex:1;display:flex;flex-direction:column;background:var(--surface);min-width:0;overflow-y:auto}
-.nitro-hero{padding:3rem 2.5rem 2rem;text-align:center;background:linear-gradient(180deg,#1a1000 0%,var(--surface) 100%);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
-.nitro-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,#ffc84d12,transparent);pointer-events:none}
-.nitro-orb{width:80px;height:80px;border-radius:50%;background:var(--nitro-grad);margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 0 40px #ffc84d30}
-.nitro-title{font-size:2rem;font-weight:800;letter-spacing:-1px;background:var(--nitro-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.4rem}
-.nitro-sub{font-size:.92rem;color:var(--ink2);max-width:400px;margin:0 auto 1.5rem;line-height:1.55}
-.nitro-price-tag{display:inline-flex;align-items:baseline;gap:.35rem;background:var(--raised);border:1px solid #ffc84d30;border-radius:var(--r999);padding:.5rem 1.25rem;margin-bottom:1.5rem}
-.nitro-price-big{font-size:1.8rem;font-weight:800;color:var(--gold)}
+.nitro-hero{padding:2.5rem 2.5rem 1.75rem;text-align:center;background:linear-gradient(180deg,#1a1200 0%,var(--surface) 100%);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.nitro-hero::before{content:'力';font-family:var(--font-jp);position:absolute;right:-15px;top:-20px;font-size:200px;font-weight:900;color:#e8c54706;pointer-events:none;line-height:1}
+.nitro-orb{width:70px;height:70px;border-radius:50%;background:var(--nitro-grad);margin:0 auto 1.1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 40px #e8c54728}
+.nitro-title{font-size:1.9rem;font-weight:900;letter-spacing:-1.5px;background:var(--nitro-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.35rem}
+.nitro-sub{font-size:.88rem;color:var(--ink2);max-width:380px;margin:0 auto 1.3rem;line-height:1.55}
+.nitro-price-tag{display:inline-flex;align-items:baseline;gap:.35rem;background:var(--raised);border:1px solid #e8c54728;border-radius:var(--r999);padding:.5rem 1.2rem;margin-bottom:1.5rem}
+.nitro-price-big{font-size:1.7rem;font-weight:900;color:var(--gold)}
 .nitro-price-mo{font-size:.82rem;color:var(--ink2)}
-.nitro-features{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;padding:1.5rem 2.5rem;max-width:600px;margin:0 auto;width:100%}
-.nf-card{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r12);padding:1rem 1.1rem;display:flex;align-items:flex-start;gap:.75rem}
-.nf-ico{font-size:1.4rem;flex-shrink:0;margin-top:.05rem}
-.nf-title{font-size:.88rem;font-weight:700;color:var(--ink1);margin-bottom:.18rem}
-.nf-desc{font-size:.74rem;color:var(--ink3);line-height:1.45}
-.nitro-buy-section{padding:1.5rem 2.5rem 3rem;max-width:480px;margin:0 auto;width:100%;text-align:center}
-.nitro-buy-btn{width:100%;background:var(--nitro-grad);border:none;border-radius:var(--r12);color:#000;font-family:var(--font);font-size:1rem;font-weight:800;padding:1rem;cursor:pointer;letter-spacing:.01em;transition:opacity .2s,transform .1s,box-shadow .2s;box-shadow:0 4px 24px #ffc84d30;margin-bottom:.75rem}
-.nitro-buy-btn:hover{opacity:.9;box-shadow:0 8px 32px #ffc84d40}
+.nitro-features{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;padding:1.25rem 2.5rem;max-width:580px;margin:0 auto;width:100%}
+.nf-card{background:var(--raised);border:1px solid var(--border2);border-radius:var(--r12);padding:.9rem 1rem;display:flex;align-items:flex-start;gap:.65rem}
+.nf-ico{font-size:1.3rem;flex-shrink:0;margin-top:.05rem}
+.nf-title{font-size:.85rem;font-weight:700;margin-bottom:.15rem}
+.nf-desc{font-size:.73rem;color:var(--ink3);line-height:1.44}
+.nitro-buy-section{padding:1.25rem 2.5rem 2.5rem;max-width:440px;margin:0 auto;width:100%;text-align:center}
+.nitro-buy-btn{width:100%;background:var(--nitro-grad);border:none;border-radius:var(--r12);color:#000;font-family:var(--font);font-size:.95rem;font-weight:900;padding:.95rem;cursor:pointer;transition:opacity .2s,transform .1s,box-shadow .2s;box-shadow:0 4px 24px #e8c54728;margin-bottom:.7rem}
+.nitro-buy-btn:hover{opacity:.9;box-shadow:0 8px 32px #e8c54738}
 .nitro-buy-btn:active{transform:scale(.98)}
 .nitro-secure{font-size:.72rem;color:var(--ink3);display:flex;align-items:center;justify-content:center;gap:.35rem}
-/* Comparison */
-.nitro-compare{padding:.5rem 2.5rem 1.5rem;max-width:600px;margin:0 auto;width:100%}
-.nc-title{font-size:.7rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;text-align:center;margin-bottom:.85rem}
-.nc-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;border-radius:var(--r6);font-size:.82rem}
-.nc-row:nth-child(odd){background:var(--raised)}
-.nc-feat{color:var(--ink2);flex:1}
-.nc-free{width:80px;text-align:center;color:var(--ink3);font-size:.8rem}
-.nc-nitro{width:80px;text-align:center;color:var(--gold);font-size:.8rem;font-weight:700}
-.nc-head{font-weight:800;color:var(--ink3);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em}
 
-/* Payment modal */
-.pay-modal{width:460px}
-.pay-amount{background:linear-gradient(135deg,#1a1000,#0f1120);border:1px solid #ffc84d25;border-radius:var(--r12);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-.pay-item{font-size:.88rem;color:var(--ink1);font-weight:600}
-.pay-cost{font-size:1.2rem;font-weight:800;color:var(--gold)}
-.pay-divider{height:1px;background:var(--border);margin:.75rem 0}
-.card-row{display:flex;gap:.55rem}
-.pay-note{font-size:.72rem;color:var(--ink3);text-align:center;margin-top:.75rem;line-height:1.5}
-.pay-success{text-align:center;padding:1rem 0}
-.pay-success-ico{font-size:3rem;margin-bottom:.75rem}
-.pay-success-t{font-size:1.1rem;font-weight:800;color:var(--green);margin-bottom:.4rem}
-.pay-success-s{font-size:.82rem;color:var(--ink2)}
+/* ━━━ Context Menu ━━━ */
+.ctx{position:fixed;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);padding:.3rem;min-width:160px;z-index:400;box-shadow:0 12px 40px #00000080;animation:mIn .1s ease}
+.ctx.gone{display:none}
+.cxi{padding:.43rem .75rem;border-radius:var(--r6);font-size:.82rem;cursor:pointer;color:var(--ink2);transition:background .1s,color .1s;display:flex;align-items:center;gap:.45rem}
+.cxi:hover{background:var(--card);color:var(--ink1)}
+.cxi.red{color:var(--red)}
+.cxi.red:hover{background:var(--glow-red)}
+.cxi-sep{height:1px;background:var(--border);margin:.2rem 0}
 
-/* Image lightbox */
-#lightbox{position:fixed;inset:0;background:#000000d0;display:none;align-items:center;justify-content:center;z-index:300;cursor:zoom-out}
+/* Lightbox */
+#lightbox{position:fixed;inset:0;background:#000000d8;display:none;align-items:center;justify-content:center;z-index:300;cursor:zoom-out}
 #lightbox img{max-width:90vw;max-height:90vh;border-radius:var(--r8);object-fit:contain}
 #lightbox.on{display:flex}
 
+/* Color swatches */
+.color-swatches{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.35rem}
+.color-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;transition:transform .12s,box-shadow .12s;border:2px solid transparent}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.sel{border-color:#fff;box-shadow:0 0 0 2px #ffffff40}
+
+/* Permission chips */
+.perm-chip{font-size:.66rem;padding:.15rem .5rem;border-radius:var(--r999);border:1px solid var(--border2);color:var(--ink3);display:inline-block;margin:.15rem .1rem}
+.perm-chip.active{border-color:var(--mint);color:var(--mint);background:#38d9a910}
+
 /* Animations */
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.msg-anim{animation:msgIn .16s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.msg-anim{animation:msgIn .15s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* Notification dot */
+.badge-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--void);display:none}
+.badge-dot.show{display:block}
+
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--raised);border:1px solid var(--border2);border-radius:var(--r8);padding:.65rem 1rem;font-size:.82rem;color:var(--ink1);z-index:600;box-shadow:0 8px 32px #00000080;animation:slideIn .2s ease;display:flex;align-items:center;gap:.5rem}
+.toast.error{border-color:var(--red);background:#1a0508}
+.toast.success{border-color:var(--mint);background:#071a12}
 </style>
 </head>
 <body>
@@ -349,29 +450,38 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- SETUP -->
 <div id="setup">
   <div class="setup-bg"></div>
-  <div class="setup-orb"></div>
   <div class="setup-card">
+    <div class="sc-kana">スクールコード</div>
     <div class="sc-logo">Schoolcord</div>
-    <div class="sc-tagline">Your school's group chat — no account needed.</div>
+    <div class="sc-tagline">Your school's group chat — no account needed.<br>アカウント不要でグループチャット。</div>
     <div class="field">
-      <label class="flabel" for="sn">Display Name</label>
+      <label class="flabel" for="sn">Display Name <span class="flabel-jp">表示名</span></label>
       <input class="finput" type="text" id="sn" placeholder="e.g. Alex" maxlength="24" autocomplete="off">
     </div>
+    <div class="field">
+      <label class="flabel" for="su-tag">Custom Name Tag <span class="flabel-jp">タグ（任意）</span></label>
+      <input class="finput" type="text" id="su-tag" placeholder="e.g. Class President, Mod..." maxlength="20" autocomplete="off">
+    </div>
+    <label class="admin-check-row" for="su-admin">
+      <input type="checkbox" id="su-admin">
+      <span class="admin-check-label">Request Admin Access <span style="font-family:var(--font-jp);font-size:.7rem;color:var(--ink3)">管理者</span></span>
+      <span class="admin-tag-preview">ADMIN</span>
+    </label>
     <button class="sbtn" onclick="doSetup()">Enter Schoolcord →</button>
-    <p class="snote">Saved on this device only.</p>
+    <p class="snote">Saved on this device only · デバイスのみに保存</p>
   </div>
 </div>
 
 <!-- MODAL: Create Server -->
 <div class="moverlay gone" id="m-sv">
   <div class="modal">
-    <h2>✦ Create Server</h2>
+    <h2>✦ Create Server <span class="jp-sub">サーバー作成</span></h2>
     <div class="mfield"><label class="mlabel">Server Name</label><input class="minput" id="sv-n" placeholder="e.g. CS Study Group" maxlength="40"></div>
     <div class="mfield"><label class="mlabel">Description</label><input class="minput" id="sv-d" placeholder="What's this server about?" maxlength="80"></div>
     <div class="mfield"><label class="mlabel">Icon (emoji or 2 letters)</label><input class="minput" id="sv-i" placeholder="📚" maxlength="4"></div>
-    <div class="mfield"><label class="mlabel">Tags (pick up to 3)</label><div class="tags-wrap" id="sv-tags-pick"></div></div>
+    <div class="mfield"><label class="mlabel">Tags</label><div class="tags-wrap" id="sv-tags-pick"></div></div>
     <div class="macts">
-      <button class="mbtn" onclick="closeM('m-sv')">Cancel</button>
+      <button class="mbtn" onclick="closeM('m-sv')">キャンセル</button>
       <button class="mbtn primary" onclick="createServer()">Create →</button>
     </div>
   </div>
@@ -380,18 +490,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- MODAL: Server Settings -->
 <div class="moverlay gone" id="m-svsettings">
   <div class="modal">
-    <h2>⚙ Server Settings</h2>
+    <h2>⚙ Server Settings <span class="jp-sub">サーバー設定</span></h2>
     <div class="mfield"><label class="mlabel">Invite Code</label>
       <div class="invite-box">
         <span class="invite-code" id="sv-invite-code">—</span>
         <button class="invite-copy" id="invite-copy-btn" onclick="copyInvite()">Copy</button>
       </div>
-      <div style="font-size:.72rem;color:var(--ink3);margin-top:.4rem">Share this code so others can join.</div>
     </div>
+    <div class="mfield"><label class="mlabel">Server Name</label><input class="minput" id="sv-rename" placeholder="New name" maxlength="40"></div>
     <div class="mfield"><label class="mlabel">Tags</label><div class="tags-wrap" id="sv-tags-edit"></div></div>
-    <div class="mfield"><label class="mlabel">Rename Server</label><input class="minput" id="sv-rename" placeholder="New name" maxlength="40"></div>
     <div class="macts">
-      <button class="mbtn danger" onclick="deleteServer()">Delete Server</button>
+      <button class="mbtn danger" onclick="deleteServer()">Delete</button>
       <button class="mbtn" onclick="closeM('m-svsettings')">Close</button>
       <button class="mbtn primary" onclick="saveServerSettings()">Save</button>
     </div>
@@ -401,8 +510,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- MODAL: Join Server -->
 <div class="moverlay gone" id="m-join">
   <div class="modal">
-    <h2>🔗 Join a Server</h2>
-    <div class="mfield"><label class="mlabel">Invite Code</label><input class="minput" id="join-code" placeholder="Paste invite code here..." maxlength="10"></div>
+    <h2>🔗 Join Server <span class="jp-sub">参加</span></h2>
+    <div class="mfield"><label class="mlabel">Invite Code</label><input class="minput" id="join-code" placeholder="Paste invite code…" maxlength="12"></div>
     <div id="join-err" style="font-size:.78rem;color:var(--red);margin-top:.3rem;display:none"></div>
     <div class="macts">
       <button class="mbtn" onclick="closeM('m-join')">Cancel</button>
@@ -414,8 +523,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- MODAL: Add Channel -->
 <div class="moverlay gone" id="m-ch">
   <div class="modal">
-    <h2># New Channel</h2>
+    <h2># New Channel <span class="jp-sub">チャンネル</span></h2>
     <div class="mfield"><label class="mlabel">Channel Name</label><input class="minput" id="ch-n" placeholder="e.g. homework-help" maxlength="32"></div>
+    <div class="mfield"><label class="mlabel">Description (optional)</label><input class="minput" id="ch-desc-new" placeholder="What's this channel for?" maxlength="60"></div>
     <div class="macts">
       <button class="mbtn" onclick="closeM('m-ch')">Cancel</button>
       <button class="mbtn primary" onclick="addChannel()">Create</button>
@@ -423,22 +533,40 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
+<!-- MODAL: Channel Settings -->
+<div class="moverlay gone" id="m-chsettings">
+  <div class="modal wide">
+    <h2>⚙ Channel Settings <span class="jp-sub">チャンネル設定</span></h2>
+    <div class="mfield"><label class="mlabel">Channel Name</label><input class="minput" id="ch-rename-input" placeholder="channel-name" maxlength="32"></div>
+    <div class="mfield"><label class="mlabel">Description</label><input class="minput" id="ch-desc-input" placeholder="What's this channel for?" maxlength="60"></div>
+    <div class="ch-settings-section">
+      <div class="ch-settings-label">Role Permissions <span style="font-family:var(--font-jp);font-size:.6rem;font-weight:400;text-transform:none;letter-spacing:0">権限</span></div>
+      <div id="ch-perm-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
+    </div>
+    <div class="macts">
+      <button class="mbtn danger small" onclick="delCurrentChannel()">Delete Channel</button>
+      <button class="mbtn" onclick="closeM('m-chsettings')">Cancel</button>
+      <button class="mbtn primary" onclick="saveChannelSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: New DM -->
 <div class="moverlay gone" id="m-dm">
   <div class="modal">
-    <h2>💬 New Message</h2>
+    <h2>💬 New Message <span class="jp-sub">メッセージ</span></h2>
     <div class="mtabs">
       <div class="mtab on" id="t-dm" onclick="dmTab('dm')">Direct Message</div>
       <div class="mtab" id="t-grp" onclick="dmTab('grp')">Group Chat</div>
     </div>
     <div id="dm-pane">
       <input class="minput" id="dm-q" placeholder="Search online users…" oninput="renderUList('dm-ul',this.value,false)" style="margin-bottom:.5rem">
-      <div class="ulist" id="dm-ul"></div>
+      <div style="max-height:200px;overflow-y:auto" id="dm-ul"></div>
     </div>
     <div id="grp-pane" style="display:none">
       <div class="mfield"><label class="mlabel">Group Name</label><input class="minput" id="grp-n" placeholder="e.g. Bio Squad" maxlength="32"></div>
       <input class="minput" id="grp-q" placeholder="Search users…" oninput="renderUList('grp-ul',this.value,true)" style="margin-bottom:.5rem">
-      <div class="ulist" id="grp-ul"></div>
+      <div style="max-height:170px;overflow-y:auto" id="grp-ul"></div>
     </div>
     <div class="macts">
       <button class="mbtn" onclick="closeM('m-dm')">Cancel</button>
@@ -447,79 +575,116 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
-<!-- MODAL: Payment -->
-<div class="moverlay gone" id="m-pay">
-  <div class="modal pay-modal">
-    <div id="pay-form-view">
-      <h2>⚡ Schoolcord Nitro</h2>
-      <div class="pay-amount">
-        <div class="pay-item">✦ Schoolcord Nitro — 1 Month</div>
-        <div class="pay-cost">$0.50</div>
-      </div>
-      <div class="mfield">
-        <label class="mlabel">Card Number</label>
-        <input class="minput" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)">
-      </div>
-      <div class="card-row">
-        <div class="mfield" style="flex:1"><label class="mlabel">Expiry</label><input class="minput" id="card-exp" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)"></div>
-        <div class="mfield" style="flex:1"><label class="mlabel">CVV</label><input class="minput" id="card-cvv" placeholder="123" maxlength="4" type="password"></div>
-      </div>
-      <div class="mfield"><label class="mlabel">Name on Card</label><input class="minput" id="card-name" placeholder="Your name"></div>
-      <div class="pay-divider"></div>
-      <div class="macts" style="margin-top:0">
-        <button class="mbtn" onclick="closeM('m-pay')">Cancel</button>
-        <button class="mbtn primary" onclick="window.open('https://www.paypal.com/paypalme/gcrobbie/0.50','_blank')" style="background:var(--nitro-grad);border-color:transparent;color:#000">Pay on PayPal →</button>
-      </div>
-      <p class="pay-note">🔒 This is a demo — no real payment is processed. Stripe integration can be added.</p>
+<!-- MODAL: Create Role -->
+<div class="moverlay gone" id="m-role">
+  <div class="modal">
+    <h2>🏷 <span id="role-modal-title">Create Role</span> <span class="jp-sub">ロール</span></h2>
+    <div class="mfield"><label class="mlabel">Role Name</label><input class="minput" id="role-name-input" placeholder="e.g. Moderator" maxlength="24"></div>
+    <div class="mfield"><label class="mlabel">Color</label>
+      <div class="color-swatches" id="role-color-swatches"></div>
     </div>
-    <div id="pay-success-view" class="pay-success" style="display:none">
-      <div class="pay-success-ico">⭐</div>
-      <div class="pay-success-t">Nitro Activated!</div>
-      <div class="pay-success-s">Welcome to Schoolcord Nitro. Your golden name and perks are now live!</div>
-      <div class="macts" style="justify-content:center;margin-top:1.25rem">
-        <button class="mbtn primary" onclick="closePaySuccess()">Let's go! 🚀</button>
-      </div>
+    <div class="mfield"><label class="mlabel">Permissions</label>
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.35rem" id="role-perm-toggles"></div>
+    </div>
+    <div class="macts">
+      <button class="mbtn" onclick="closeM('m-role')">Cancel</button>
+      <button class="mbtn primary" onclick="saveRole()">Save Role</button>
     </div>
   </div>
 </div>
 
-<!-- Image Lightbox -->
-<div id="lightbox" onclick="g('lightbox').classList.remove('on')"><img id="lb-img" src=""></div>
+<!-- MODAL: Assign Role -->
+<div class="moverlay gone" id="m-assign-role">
+  <div class="modal">
+    <h2>🏷 Assign Role <span class="jp-sub">ロール割り当て</span></h2>
+    <div style="font-size:.84rem;color:var(--ink2);margin-bottom:.85rem">Assigning role to: <strong id="assign-role-target"></strong></div>
+    <div class="mfield"><label class="mlabel">Select Role</label>
+      <select class="mselect" id="assign-role-select"></select>
+    </div>
+    <div class="macts">
+      <button class="mbtn" onclick="closeM('m-assign-role')">Cancel</button>
+      <button class="mbtn primary" onclick="confirmAssignRole()">Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Kick/Ban -->
+<div class="moverlay gone" id="m-modaction">
+  <div class="modal">
+    <h2 id="modaction-title">⚡ Kick Member</h2>
+    <div style="font-size:.84rem;color:var(--ink2);margin-bottom:.85rem">Target: <strong id="modaction-target"></strong></div>
+    <div class="mfield"><label class="mlabel">Reason (optional)</label><input class="minput" id="modaction-reason" placeholder="Enter reason…" maxlength="80"></div>
+    <div class="macts">
+      <button class="mbtn" onclick="closeM('m-modaction')">Cancel</button>
+      <button class="mbtn danger" id="modaction-confirm-btn" onclick="confirmModAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nitro Payment -->
+<div class="moverlay gone" id="m-pay">
+  <div class="modal">
+    <h2>⚡ Schoolcord Nitro <span class="jp-sub">ニトロ</span></h2>
+    <div style="background:linear-gradient(135deg,#1a1200,#0f1119);border:1px solid #e8c54725;border-radius:var(--r12);padding:1rem 1.15rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
+      <span style="font-size:.88rem;font-weight:600">✦ Schoolcord Nitro — 1 Month</span>
+      <span style="font-size:1.2rem;font-weight:900;color:var(--gold)">$0.50</span>
+    </div>
+    <div class="mfield"><label class="mlabel">Card Number</label><input class="minput" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)"></div>
+    <div style="display:flex;gap:.5rem">
+      <div class="mfield" style="flex:1"><label class="mlabel">Expiry</label><input class="minput" id="card-exp" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)"></div>
+      <div class="mfield" style="flex:1"><label class="mlabel">CVV</label><input class="minput" id="card-cvv" placeholder="123" maxlength="4" type="password"></div>
+    </div>
+    <div class="mfield"><label class="mlabel">Name on Card</label><input class="minput" id="card-name" placeholder="Your name"></div>
+    <div class="macts">
+      <button class="mbtn" onclick="closeM('m-pay')">Cancel</button>
+      <button class="mbtn primary" onclick="window.open('https://www.paypal.com/paypalme/gcrobbie/0.50','_blank')" style="background:var(--nitro-grad);border-color:transparent;color:#000;font-weight:800">Pay via PayPal →</button>
+    </div>
+    <p style="font-size:.7rem;color:var(--ink4);text-align:center;margin-top:.75rem">🔒 Demo only — no real payment. Stripe can be integrated.</p>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="g('lightbox').classList.remove('on')"><img id="lb-img" src="" alt=""></div>
 
 <!-- APP -->
 <div id="app" class="gone">
   <!-- Rail -->
   <div class="rail" id="rail">
-    <div class="ri on" id="ri-dm" data-id="__dm" onclick="showDMs()"><span>💬</span><span class="ri-tip">Messages</span></div>
-    <div class="ri" id="ri-friends" onclick="showFriends()" style="position:relative"><span>👥</span><span class="ri-tip">Friends</span><span class="badge-dot gone" id="friend-badge"></span></div>
+    <div class="ri on" id="ri-dm" onclick="showDMs()"><span>💬</span><span class="ri-tip">Messages</span></div>
+    <div class="ri" id="ri-friends" onclick="showFriends()" style="position:relative"><span>👥</span><span class="ri-tip">Friends</span><span class="badge-dot" id="friend-badge"></span></div>
     <div class="ri ri-nitro" id="ri-nitro" onclick="showNitro()"><span>⚡</span><span class="ri-tip">Nitro</span></div>
+    <div class="ri danger-ri" id="ri-admin" onclick="showAdminPanel()" style="display:none;position:relative"><span>🛡</span><span class="ri-tip">Admin Panel</span></div>
     <div class="ri-sep"></div>
     <div id="rail-svs"></div>
     <div class="ri-sep"></div>
-    <div class="ri ri-add" onclick="openM('m-sv')"><span>+</span><span class="ri-tip">Create Server</span></div>
-    <div class="ri" onclick="openM('m-join')" style="color:var(--cyan)"><span>🔗</span><span class="ri-tip">Join Server</span></div>
+    <div class="ri" onclick="openM('m-sv')" style="color:#38d9a9;font-size:1.2rem"><span>+</span><span class="ri-tip">Create Server</span></div>
+    <div class="ri" onclick="openM('m-join')" style="color:var(--indigo2)"><span>🔗</span><span class="ri-tip">Join Server</span></div>
   </div>
 
   <!-- Channel Panel -->
   <div class="cpanel" id="cpanel">
     <div class="cph">
-      <div class="cph-name" id="cph-name">Direct Messages</div>
-      <button class="cph-btn gone" id="sv-settings-btn" onclick="openServerSettings()">⚙</button>
+      <div>
+        <div class="cph-name" id="cph-name">Direct Messages</div>
+        <div class="cph-kana" id="cph-kana">ダイレクトメッセージ</div>
+      </div>
+      <button class="cph-btn gone" id="sv-settings-btn" onclick="openServerSettings()" title="Server Settings">⚙</button>
     </div>
-    <div id="dm-section">
-      <div class="cp-section">Messages <button class="cp-add" onclick="openM('m-dm')">+</button></div>
-      <div id="dm-list"></div>
+    <div class="cpanel-scroll">
+      <div id="dm-section">
+        <div class="cp-section">Messages <button class="cp-add" onclick="openM('m-dm')">+</button></div>
+        <div id="dm-list"></div>
+      </div>
+      <div id="sv-section" style="display:none">
+        <div class="cp-section">Channels <button class="cp-add" id="ch-add-btn" onclick="openM('m-ch')" style="display:none">+</button></div>
+        <div id="ch-list"></div>
+      </div>
     </div>
-    <div id="sv-section" style="display:none">
-      <div class="cp-section">Channels <button class="cp-add" id="ch-add-btn" onclick="openM('m-ch')" style="display:none">+</button></div>
-      <div id="ch-list"></div>
-    </div>
-    <div class="cpanel-spacer"></div>
     <div class="userbar">
       <div class="ub-av" id="ub-av"></div>
       <div class="ub-info">
         <div class="ub-n" id="ub-n"></div>
-        <div class="ub-s">Online</div>
+        <div class="ub-s" id="ub-s">オンライン • Online</div>
       </div>
       <button class="ub-out" onclick="doLogout()" title="Log out">↩</button>
     </div>
@@ -527,10 +692,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   <!-- Main area -->
   <div id="main" style="flex:1;display:flex;min-width:0">
-    <div class="empty" id="empty" style="flex:1">
+    <div class="empty" id="empty" style="flex:1;position:relative">
+      <div class="empty-jp">会話</div>
       <div class="empty-ico">💬</div>
       <div class="empty-t">Welcome to Schoolcord</div>
-      <div class="empty-s">Select a channel or open a message to get started.</div>
+      <div class="empty-s">Select a channel or open a message to get started.<br><span style="font-family:var(--font-jp);font-size:.75rem;color:var(--ink4)">チャンネルを選択してください</span></div>
     </div>
 
     <!-- Chat view -->
@@ -541,27 +707,25 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="chdr-div"></div>
         <span class="chdr-desc" id="chdr-desc"></span>
         <div class="chdr-right">
-          <div class="online-pill" id="online-pill"><div class="od"></div><span id="online-n">...</span></div>
+          <div class="online-pill"><div class="od"></div><span id="online-n">...</span></div>
+          <button class="hdr-btn" id="ch-settings-hdr-btn" onclick="openChSettings()" style="display:none" title="Channel Settings">⚙</button>
+          <button class="hdr-btn" onclick="toggleMembersPanel()" title="Members">👥</button>
         </div>
       </div>
       <div class="sv-tags-row" id="sv-tags-row"></div>
       <div class="msgs" id="msgs"><div class="sysmsg" id="welcome-msg"></div></div>
       <div class="typing" id="typing"></div>
-      <!-- Reply indicator -->
       <div id="reply-indicator">
-        <span>Replying to <span class="ri-name" id="ri-name-label"></span></span>
-        <button class="ri-close" onclick="clearReply()">✕</button>
+        <span>↩ Replying to <span id="ri-name-label" style="color:var(--indigo2);font-weight:700"></span></span>
+        <button class="ri-close-btn" onclick="clearReply()">✕</button>
       </div>
       <div class="inputzone">
-        <div class="inputbox">
-          <!-- Image upload -->
+        <div class="inputbox" id="inputbox">
           <button class="input-btn" onclick="g('img-upload').click()" title="Attach image">🖼</button>
           <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="handleImgUpload(this)">
-          <!-- Voice record -->
           <button class="input-btn voice-rec-btn" id="voice-btn" onclick="toggleRecord()" title="Voice message">🎙</button>
-          <!-- Emoji picker trigger -->
-          <button class="input-btn" onclick="toggleEmojiPicker()" title="Emoji" id="emoji-trigger-btn" style="position:relative">😊<div id="input-emoji-picker" class="emoji-picker" style="display:none;bottom:calc(100% + 8px);right:0;left:auto;position:absolute"></div></button>
-          <textarea id="msginput" rows="1" placeholder="Message…" maxlength="2000"></textarea>
+          <button class="input-btn" onclick="toggleEmojiPicker()" title="Emoji" style="position:relative">😊<div id="input-emoji-picker" class="emoji-picker" style="display:none;position:absolute;bottom:calc(100% + 8px);right:0;left:auto;width:228px"></div></button>
+          <textarea id="msginput" rows="1" placeholder="メッセージを送信…" maxlength="2000"></textarea>
           <button class="sendbtn" id="sendbtn" onclick="sendMsg()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -571,7 +735,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     <!-- Friends view -->
     <div id="friendsview" style="display:none;flex:1;flex-direction:column;min-width:0" class="fpanel">
-      <div class="fp-hdr">👥 Friends</div>
+      <div class="fp-hdr">👥 Friends <span style="font-family:var(--font-jp);font-size:.72rem;color:var(--ink3);font-weight:400">フレンド</span></div>
       <div class="fp-tabs">
         <div class="fp-tab on" data-tab="friends" onclick="fTab(this)">All Friends</div>
         <div class="fp-tab" data-tab="pending" onclick="fTab(this)">Pending <span id="pending-count"></span></div>
@@ -590,47 +754,44 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
     </div>
 
+    <!-- Admin view -->
+    <div id="adminview" style="display:none;flex:1;flex-direction:column;min-width:0" class="admin-panel">
+      <div class="admin-hero">
+        <div class="admin-hero-title">🛡 Admin Panel</div>
+        <div class="admin-hero-sub">Manage members, roles, bans, and channel permissions across your servers.<br><span style="font-family:var(--font-jp);font-size:.72rem;color:var(--ink4)">サーバー管理パネル</span></div>
+      </div>
+      <div class="admin-tabs">
+        <div class="admin-tab on" data-atab="members" onclick="adminTab(this)">Members</div>
+        <div class="admin-tab" data-atab="roles" onclick="adminTab(this)">Roles</div>
+        <div class="admin-tab" data-atab="permissions" onclick="adminTab(this)">Permissions</div>
+        <div class="admin-tab" data-atab="bans" onclick="adminTab(this)">Bans</div>
+      </div>
+      <div class="admin-body" id="admin-body"></div>
+    </div>
+
     <!-- Nitro view -->
     <div id="nitroview" style="display:none;flex:1;flex-direction:column;min-width:0" class="nitro-page">
       <div class="nitro-hero">
         <div class="nitro-orb">⚡</div>
         <div class="nitro-title">Schoolcord Nitro</div>
-        <div class="nitro-sub">Level up your school experience with custom perks, larger uploads, and a golden name that stands out in every chat.</div>
-        <div class="nitro-price-tag">
-          <span class="nitro-price-big">$0.50</span>
-          <span class="nitro-price-mo">/ month</span>
-        </div>
+        <div class="nitro-sub">Level up with gold name, larger uploads, and voice messages.</div>
+        <div class="nitro-price-tag"><span class="nitro-price-big">$0.50</span><span class="nitro-price-mo">/ month</span></div>
       </div>
-      <!-- Features grid -->
       <div class="nitro-features">
-        <div class="nf-card"><div class="nf-ico">✨</div><div><div class="nf-title">Gold Name</div><div class="nf-desc">Stand out with a shimmering golden gradient username in every chat</div></div></div>
-        <div class="nf-card"><div class="nf-ico">🖼</div><div><div class="nf-title">Image Uploads</div><div class="nf-desc">Share high-res images up to 50MB in any channel or DM</div></div></div>
-        <div class="nf-card"><div class="nf-ico">🎙</div><div><div class="nf-title">Voice Messages</div><div class="nf-desc">Send voice notes up to 5 minutes long to anyone</div></div></div>
-        <div class="nf-card"><div class="nf-ico">😎</div><div><div class="nf-title">Emoji Boost</div><div class="nf-desc">Unlock the full emoji pack — 200+ reactions at your fingertips</div></div></div>
-        <div class="nf-card"><div class="nf-ico">⚡</div><div><div class="nf-title">Priority Chat</div><div class="nf-desc">Messages delivered faster with Nitro priority routing</div></div></div>
-        <div class="nf-card"><div class="nf-ico">🏅</div><div><div class="nf-title">Nitro Badge</div><div class="nf-desc">A ⚡ badge next to your name so everyone knows you're Nitro</div></div></div>
+        <div class="nf-card"><div class="nf-ico">✨</div><div><div class="nf-title">Gold Name</div><div class="nf-desc">Shimmering gradient username in every chat</div></div></div>
+        <div class="nf-card"><div class="nf-ico">🖼</div><div><div class="nf-title">50MB Images</div><div class="nf-desc">Share high-res photos in any channel</div></div></div>
+        <div class="nf-card"><div class="nf-ico">🎙</div><div><div class="nf-title">5-Min Voice</div><div class="nf-desc">Long voice notes to anyone, anywhere</div></div></div>
+        <div class="nf-card"><div class="nf-ico">⚡</div><div><div class="nf-title">Nitro Badge</div><div class="nf-desc">⚡ badge so everyone knows you're Nitro</div></div></div>
       </div>
-      <!-- Comparison -->
-      <div class="nitro-compare">
-        <div class="nc-title">Free vs Nitro</div>
-        <div class="nc-row"><span class="nc-feat nc-head">Feature</span><span class="nc-free nc-head">Free</span><span class="nc-nitro nc-head">Nitro</span></div>
-        <div class="nc-row"><span class="nc-feat">Username colour</span><span class="nc-free">Default</span><span class="nc-nitro">✦ Gold</span></div>
-        <div class="nc-row"><span class="nc-feat">Image upload size</span><span class="nc-free">8 MB</span><span class="nc-nitro">50 MB</span></div>
-        <div class="nc-row"><span class="nc-feat">Voice messages</span><span class="nc-free">30 sec</span><span class="nc-nitro">5 min</span></div>
-        <div class="nc-row"><span class="nc-feat">Emoji reactions</span><span class="nc-free">Basic</span><span class="nc-nitro">Full pack</span></div>
-        <div class="nc-row"><span class="nc-feat">Profile badge</span><span class="nc-free">—</span><span class="nc-nitro">⚡ Badge</span></div>
-        <div class="nc-row"><span class="nc-feat">Message history</span><span class="nc-free">200 msgs</span><span class="nc-nitro">Unlimited</span></div>
-      </div>
-      <!-- Buy button -->
       <div class="nitro-buy-section">
-        <button class="nitro-buy-btn" onclick="window.open('https://www.paypal.com/paypalme/gcrobbie/0.50','_blank')">⚡ Get Nitro for $0.50</button>
-        <div class="nitro-secure">🔒 Secure payment · Cancel anytime · Instant activation</div>
+        <button class="nitro-buy-btn" onclick="window.open('https://www.paypal.com/paypalme/gcrobbie/0.50','_blank')">⚡ Get Nitro — $0.50/mo</button>
+        <div class="nitro-secure">🔒 Secure · Cancel anytime · Instant activation</div>
       </div>
     </div>
 
     <!-- Members panel -->
     <div class="mpanel gone" id="mpanel">
-      <div class="mp-title">Online — <span id="mp-count">0</span></div>
+      <div class="mp-section">Online — <span id="mp-count">0</span></div>
       <div id="mp-list"></div>
     </div>
   </div>
@@ -642,79 +803,148 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
+// ━━━━━━━ Firebase ━━━━━━━
 const FB={apiKey:"AIzaSyAl21viSLPePB7XytPZrG-RsIyWBMfT798",authDomain:"robbiecord811.firebaseapp.com",projectId:"robbiecord811",storageBucket:"robbiecord811.firebasestorage.app",messagingSenderId:"387286792987",appId:"1:387286792987:web:ccdb1e63c13b8f551ff1be"};
 firebase.initializeApp(FB);
 const db=firebase.firestore();
 
+// ━━━━━━━ Constants ━━━━━━━
 const ALL_TAGS=['📚 Study','🎮 Gaming','💻 Tech','🎨 Art','⚽ Sports','🎵 Music','🧪 Science','🗣 Language','📐 Maths','🌍 Geography'];
-const EMOJIS=['👍','❤️','😂','😮','😢','🔥','🎉','💯','✅','❌','🙏','😍','🤔','😎','👀','⭐','🚀','💪','🤣','😅','💀','🥳','😤','🫡','🥰','😭','🤩','😡','🫶','🎯'];
+const EMOJIS=['👍','❤️','😂','😮','😢','🔥','🎉','💯','✅','❌','🙏','😍','🤔','😎','👀','⭐','🚀','💪','🤣','😅','💀','🥳','😤','🫡','🥰','😭','🤩','😡','🫶','🎯','✨','🎊','🌟'];
+const ROLE_COLORS=['#e8394a','#ff7043','#e8c547','#38d9a9','#4a5fff','#8b5cf6','#f472b6','#06b6d4','#84cc16','#f97316'];
+const ALL_PERMS=['send_messages','read_messages','manage_messages','manage_channels','kick_members','ban_members','view_audit_log'];
+const PERM_LABELS={send_messages:'Send Messages',read_messages:'Read Messages',manage_messages:'Manage Messages',manage_channels:'Manage Channels',kick_members:'Kick Members',ban_members:'Ban Members',view_audit_log:'View Audit Log'};
 
-let ME=null,IS_NITRO=false;
-let curSv=null,curCh=null,curDM=null;
-let onlineUsers=[],nitroUsers=new Set();
+// ━━━━━━━ State ━━━━━━━
+let ME=null,MY_TAG=null,IS_NITRO=false,IS_ADMIN=false;
+let curSv=null,curCh=null,curDM=null,curSvData=null;
+let onlineUsers=[],nitroUsers=new Set(),adminUsers=new Set(),userTags={};
 let grpSel=[],dmTabMode='dm',friendTabMode='friends';
-let svTagsSel=[],editSvTagsSel=[],curSvData=null;
+let svTagsSel=[],editSvTagsSel=[];
 let unsubMsgs=null,unsubPres=null,unsubTyping=null,unsubSvs=null,unsubChs=null,unsubDMs=null,unsubFriends=null;
 let presTimer=null,renderedIds=new Set(),lastAuth=null,lastTs=null;
 let typTimer=null,lastTypSent=0;
-let replyTo=null; // {id, author, text}
-let mediaRec=null,isRecording=false,audioChunks=[];
-let msgDataCache={}; // id -> data for reactions/edit
+let replyTo=null;
+let mediaRec=null,isRecording=false,audioChunks=[],recStart=0;
+let curAudio=null;
+let msgDataCache={};
+let emojiPickerMsgId=null,emojiPickerEl=null;
+let adminTabMode='members';
+let rolePickColor=ROLE_COLORS[0],rolePickPerms=[];
+let modActionType=null,modActionTarget=null;
+let chSettingsCh=null;
+let bannedUsers={};// svId -> [{name,reason}]
+let svRoles={};// svId -> [{id,name,color,perms}]
+let memberRoles={};// svId_userName -> roleId
+let chPerms={};// svId_chId_roleId -> {allow:[],deny:[]}
 
-// ── Boot ──
+// ━━━━━━━ Boot ━━━━━━━
 window.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('sc_u');
-  const nitroSaved=localStorage.getItem('sc_nitro');
-  if(saved){ME=saved;if(nitroSaved==='1')IS_NITRO=true;boot();}
+  if(saved){
+    ME=saved;
+    MY_TAG=localStorage.getItem('sc_tag')||null;
+    IS_NITRO=localStorage.getItem('sc_nitro')==='1';
+    IS_ADMIN=localStorage.getItem('sc_admin')==='1';
+    boot();
+  }
   g('sn').addEventListener('keydown',e=>{if(e.key==='Enter')doSetup();});
   const mi=g('msginput');
   mi.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
   mi.addEventListener('input',()=>{resize(mi);sendTypSignal();});
-  document.addEventListener('click',e=>{hideCtx();if(!g('emoji-trigger-btn').contains(e.target))g('input-emoji-picker').style.display='none';});
+  document.addEventListener('click',e=>{
+    hideCtx();
+    if(!g('emoji-trigger-btn')?.contains(e.target))g('input-emoji-picker').style.display='none';
+    if(emojiPickerEl&&!emojiPickerEl.contains(e.target)){emojiPickerEl.remove();emojiPickerEl=null;}
+  });
   buildTagPicker('sv-tags-pick',svTagsSel,false);
   buildEmojiPicker();
+  buildRoleColorSwatches();
+  buildRolePermToggles();
 });
 
 function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,150)+'px';}
 
-// ── Auth ──
-function doSetup(){const v=g('sn').value.trim();if(!v)return;ME=v;localStorage.setItem('sc_u',v);boot();}
-function doLogout(){clearListeners();removePresence();if(presTimer)clearInterval(presTimer);ME=null;IS_NITRO=false;localStorage.removeItem('sc_u');g('app').classList.add('gone');g('setup').classList.remove('gone');g('sn').value='';resetUI();}
+// ━━━━━━━ Auth ━━━━━━━
+function doSetup(){
+  const v=g('sn').value.trim();if(!v)return;
+  ME=v;
+  MY_TAG=g('su-tag').value.trim()||null;
+  IS_ADMIN=g('su-admin').checked;
+  localStorage.setItem('sc_u',v);
+  if(MY_TAG)localStorage.setItem('sc_tag',MY_TAG);else localStorage.removeItem('sc_tag');
+  localStorage.setItem('sc_admin',IS_ADMIN?'1':'0');
+  boot();
+}
+function doLogout(){
+  clearListeners();removePresence();
+  if(presTimer)clearInterval(presTimer);
+  ME=null;IS_NITRO=false;IS_ADMIN=false;
+  localStorage.removeItem('sc_u');localStorage.removeItem('sc_tag');localStorage.removeItem('sc_admin');
+  g('app').classList.add('gone');g('setup').classList.remove('gone');g('sn').value='';resetUI();
+}
 function boot(){
   g('setup').classList.add('gone');g('app').classList.remove('gone');
   updateUserBar();
+  if(IS_ADMIN)g('ri-admin').style.display='';
   updatePres();presTimer=setInterval(updatePres,30000);
   listenPres();listenServers();listenDMs();listenFriends();
   showDMs();
 }
 function updateUserBar(){
   const av=g('ub-av');av.textContent=ini(ME);
-  av.className='ub-av'+(IS_NITRO?' nitro-av':'');
-  g('ub-n').innerHTML=h(ME)+(IS_NITRO?'<span class="nitro-badge">⚡ NITRO</span>':'');
+  av.className='ub-av'+(IS_NITRO?' nitro-av':'')+(IS_ADMIN?' admin-av':'');
+  let badges='';
+  if(IS_ADMIN)badges+=`<span class="badge badge-admin">ADMIN</span>`;
+  else if(IS_NITRO)badges+=`<span class="badge badge-nitro">⚡</span>`;
+  if(MY_TAG)badges+=`<span class="badge badge-role" style="background:var(--grad)">${h(MY_TAG)}</span>`;
+  g('ub-n').innerHTML=h(ME)+badges;
+  g('ub-s').textContent=IS_ADMIN?'管理者 • Admin':'オンライン • Online';
 }
 
-// ── Presence ──
-function updatePres(){if(!ME)return;db.collection('presence').doc(ME).set({name:ME,nitro:IS_NITRO,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}
+// ━━━━━━━ Presence ━━━━━━━
+function updatePres(){
+  if(!ME)return;
+  db.collection('presence').doc(ME).set({name:ME,nitro:IS_NITRO,admin:IS_ADMIN,tag:MY_TAG||'',lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
+}
 function removePresence(){if(ME)db.collection('presence').doc(ME).delete().catch(()=>{});}
 window.addEventListener('beforeunload',removePresence);
-
 function listenPres(){
   unsubPres=db.collection('presence').onSnapshot(snap=>{
     const cut=new Date(Date.now()-75000);
-    onlineUsers=[];nitroUsers=new Set();
-    snap.forEach(doc=>{const d=doc.data();if(d.lastSeen&&d.lastSeen.toDate()>cut){onlineUsers.push(d.name);if(d.nitro)nitroUsers.add(d.name);}});
+    onlineUsers=[];nitroUsers=new Set();adminUsers=new Set();userTags={};
+    snap.forEach(doc=>{
+      const d=doc.data();
+      if(d.lastSeen&&d.lastSeen.toDate()>cut){
+        onlineUsers.push(d.name);
+        if(d.nitro)nitroUsers.add(d.name);
+        if(d.admin)adminUsers.add(d.name);
+        if(d.tag)userTags[d.name]=d.tag;
+      }
+    });
     renderMembers(onlineUsers);
     g('online-n').textContent=onlineUsers.length+' online';
     renderFriendsTab();
   });
 }
-
 function renderMembers(members){
   const list=g('mp-list');g('mp-count').textContent=members.length;
-  list.innerHTML=members.map(n=>`<div class="mitem"><div class="mitem-av${nitroUsers.has(n)?' nitro-av':''}">${ini(n)}</div><span class="mitem-name${n===ME?' me':''}">${h(n)}${n===ME?' (you)':''}</span></div>`).join('');
+  list.innerHTML=members.map(n=>{
+    const isAdm=adminUsers.has(n)||n===ME&&IS_ADMIN;
+    const isNit=nitroUsers.has(n)||n===ME&&IS_NITRO;
+    const cls=isAdm?'admin-av':isNit?'nitro-av':'';
+    const tag=userTags[n]||null;
+    return`<div class="mitem" oncontextmenu="showMemberCtx(event,'${h(n)}')" onclick="showMemberCtx(event,'${h(n)}')">
+      <div class="mitem-av ${cls}">${ini(n)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="mitem-name${n===ME?' me':''}" style="display:flex;align-items:center;gap:.3rem">${h(n)}${isAdm?'<span class="badge badge-admin" style="font-size:.5rem">A</span>':''}</div>
+        ${tag?`<div style="font-size:.63rem;color:var(--ink4)">${h(tag)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ── Servers ──
+// ━━━━━━━ Servers ━━━━━━━
 function listenServers(){
   unsubSvs=db.collection('servers').orderBy('createdAt','asc').onSnapshot(snap=>{
     const rail=g('rail-svs');rail.innerHTML='';
@@ -722,91 +952,493 @@ function listenServers(){
       const sv=doc.data(),id=doc.id;
       const el=document.createElement('div');
       el.className='ri'+(curSv===id?' on':'');el.dataset.id=id;
-      el.innerHTML=`<span class="sv-icon-text">${h(sv.icon||ini(sv.name))}</span><span class="ri-tip">${h(sv.name)}</span>`;
+      el.innerHTML=`<span class="sv-icon">${h(sv.icon||ini(sv.name))}</span><span class="ri-tip">${h(sv.name)}</span>`;
       el.onclick=()=>showServer(id,sv);
       el.oncontextmenu=e=>{e.preventDefault();showSvCtx(e,id,sv);};
       rail.appendChild(el);
     });
   });
 }
-
 function createServer(){
   const name=g('sv-n').value.trim();if(!name)return;
-  db.collection('servers').add({name,desc:g('sv-d').value.trim(),icon:g('sv-i').value.trim()||ini(name),owner:ME,inviteCode:randCode(),tags:svTagsSel,createdAt:firebase.firestore.FieldValue.serverTimestamp()})
-  .then(ref=>{db.collection('servers').doc(ref.id).collection('channels').add({name:'general',createdAt:firebase.firestore.FieldValue.serverTimestamp()});closeM('m-sv');g('sv-n').value='';g('sv-d').value='';g('sv-i').value='';svTagsSel=[];buildTagPicker('sv-tags-pick',svTagsSel,false);});
+  db.collection('servers').add({
+    name,desc:g('sv-d').value.trim(),icon:g('sv-i').value.trim()||ini(name),
+    owner:ME,inviteCode:randCode(),tags:svTagsSel,roles:[],bans:[],
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(ref=>{
+    db.collection('servers').doc(ref.id).collection('channels').add({name:'general',desc:'General discussion',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    closeM('m-sv');g('sv-n').value='';g('sv-d').value='';g('sv-i').value='';svTagsSel=[];buildTagPicker('sv-tags-pick',svTagsSel,false);
+  });
 }
-
 function showServer(svId,sv){
   curSv=svId;curCh=null;curDM=null;curSvData=sv;
-  highlightRail(svId);g('cph-name').textContent=sv.name;
-  g('sv-settings-btn').classList.toggle('gone',sv.owner!==ME);
+  highlightRail(svId);
+  g('cph-name').textContent=sv.name;g('cph-kana').textContent='サーバー';
+  const isOwner=sv.owner===ME;
+  g('sv-settings-btn').classList.toggle('gone',!isOwner&&!IS_ADMIN);
   g('dm-section').style.display='none';g('sv-section').style.display='';
-  g('ch-add-btn').style.display=sv.owner===ME?'':'none';
+  g('ch-add-btn').style.display=(isOwner||IS_ADMIN)?'':'none';
   g('mpanel').classList.remove('gone');
   const tr=g('sv-tags-row');
   tr.innerHTML=sv.tags&&sv.tags.length?sv.tags.map(t=>`<span class="sv-tag">${h(t)}</span>`).join(''):'';
-  g('friendsview').style.display='none';g('nitroview').style.display='none';
-  listenChannels(svId,sv);
-}
-
-function listenChannels(svId){
+  g('friendsview').style.display='none';g('nitroview').style.display='none';g('adminview').style.display='none';
   if(unsubChs)unsubChs();
-  db.collection('servers').doc(svId).collection('channels').orderBy('createdAt','asc').onSnapshot(snap=>{
+  unsubChs=db.collection('servers').doc(svId).collection('channels').orderBy('createdAt','asc').onSnapshot(snap=>{
     const list=g('ch-list');list.innerHTML='';
     snap.forEach(doc=>{
       const ch=doc.data(),chId=doc.id;
+      if(!canReadChannel(svId,chId))return;// permission check
       const el=document.createElement('div');
       el.className='citem'+(curCh===chId?' on':'');el.dataset.id=chId;
-      el.innerHTML=`<span class="ci-ico">#</span><span class="ci-name">${h(ch.name)}</span>${curSvData&&curSvData.owner===ME?`<button class="ci-del" onclick="delChannel(event,'${chId}')">✕</button>`:''}`;
-      el.onclick=()=>openChannel(svId,chId,ch.name);
+      const canManage=isOwner||IS_ADMIN;
+      el.innerHTML=`<span class="ci-ico">#</span><span class="ci-name">${h(ch.name)}</span>
+        ${canManage?`<div class="ci-acts">
+          <button class="ci-act-btn" onclick="openChSettingsFromSidebar(event,'${chId}')" title="Settings">⚙</button>
+          <button class="ci-act-btn del-btn" onclick="delChannel(event,'${chId}')" title="Delete">✕</button>
+        </div>`:''}`;
+      el.onclick=()=>openChannel(svId,chId,ch.name,ch.desc||'');
       list.appendChild(el);
     });
-    if(!curCh)snap.forEach(doc=>{if(!curCh)openChannel(svId,doc.id,doc.data().name);});
+    if(!curCh)snap.forEach(doc=>{if(!curCh&&canReadChannel(svId,doc.id))openChannel(svId,doc.id,doc.data().name,doc.data().desc||'');});
   });
 }
-
+function canReadChannel(svId,chId){
+  // Check if user has read_messages perm for their role; default allow
+  const myRoleId=memberRoles[`${svId}_${ME}`]||null;
+  if(!myRoleId)return true;// default role can read
+  const perm=chPerms[`${svId}_${chId}_${myRoleId}`];
+  if(!perm)return true;
+  if(perm.deny&&perm.deny.includes('read_messages'))return false;
+  return true;
+}
+function canSendChannel(svId,chId){
+  const myRoleId=memberRoles[`${svId}_${ME}`]||null;
+  if(!myRoleId)return true;
+  const perm=chPerms[`${svId}_${chId}_${myRoleId}`];
+  if(!perm)return true;
+  if(perm.deny&&perm.deny.includes('send_messages'))return false;
+  return true;
+}
 function addChannel(){
   const name=g('ch-n').value.trim().toLowerCase().replace(/\s+/g,'-');
   if(!name||!curSv)return;
-  db.collection('servers').doc(curSv).collection('channels').add({name,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  closeM('m-ch');g('ch-n').value='';
+  db.collection('servers').doc(curSv).collection('channels').add({name,desc:g('ch-desc-new').value.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  closeM('m-ch');g('ch-n').value='';g('ch-desc-new').value='';
 }
 function delChannel(e,chId){e.stopPropagation();if(!confirm('Delete channel?'))return;db.collection('servers').doc(curSv).collection('channels').doc(chId).delete();if(curCh===chId){curCh=null;showEmpty();}}
-function openChannel(svId,chId,name){
+function openChannel(svId,chId,name,desc){
   curCh=chId;curDM=null;clearChat();clearReply();
   document.querySelectorAll('#ch-list .citem').forEach(el=>el.classList.toggle('on',el.dataset.id===chId));
-  g('chdr-ico').textContent='#';g('chdr-name').textContent=name;g('chdr-desc').textContent='';
-  g('welcome-msg').textContent=`Welcome to #${name}!`;g('msginput').placeholder=`Message #${name}`;
+  g('chdr-ico').textContent='#';g('chdr-name').textContent=name;g('chdr-desc').textContent=desc;
+  g('welcome-msg').textContent=`Welcome to #${name}!`;
+  g('msginput').placeholder=`Message #${name}…`;
+  const canManage=curSvData&&(curSvData.owner===ME||IS_ADMIN);
+  g('ch-settings-hdr-btn').style.display=canManage?'':'none';
+  const canSend=canSendChannel(svId,chId);
+  g('inputbox').style.opacity=canSend?'1':'.4';
+  g('msginput').disabled=!canSend;
+  g('sendbtn').disabled=!canSend;
+  if(!canSend)g('msginput').placeholder='You do not have permission to send messages here.';
   showChat();listenMsgs(`servers/${svId}/channels/${chId}/messages`);listenTyp(`servers/${svId}/channels/${chId}/typing`);
 }
 
-// ── Server Settings ──
-function openServerSettings(){if(!curSvData)return;g('sv-invite-code').textContent=curSvData.inviteCode||'—';g('sv-rename').value=curSvData.name||'';editSvTagsSel=[...(curSvData.tags||[])];buildTagPicker('sv-tags-edit',editSvTagsSel,true);openM('m-svsettings');}
-function copyInvite(){const code=g('sv-invite-code').textContent;navigator.clipboard.writeText(code).then(()=>{const btn=g('invite-copy-btn');btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);});}
-function saveServerSettings(){if(!curSv)return;const newName=g('sv-rename').value.trim();const upd={tags:editSvTagsSel};if(newName)upd.name=newName;db.collection('servers').doc(curSv).update(upd).then(()=>{closeM('m-svsettings');if(newName)g('cph-name').textContent=newName;});}
+// ━━━━━━━ Channel Settings ━━━━━━━
+function openChSettings(){
+  if(!curCh||!curSv)return;
+  openChSettingsModal(curCh);
+}
+function openChSettingsFromSidebar(e,chId){
+  e.stopPropagation();
+  openChSettingsModal(chId);
+}
+async function openChSettingsModal(chId){
+  chSettingsCh=chId;
+  const doc=await db.collection('servers').doc(curSv).collection('channels').doc(chId).get();
+  const ch=doc.data()||{};
+  g('ch-rename-input').value=ch.name||'';
+  g('ch-desc-input').value=ch.desc||'';
+  // Build perms list
+  const roles=curSvData&&curSvData.roles?curSvData.roles:[];
+  const list=g('ch-perm-list');list.innerHTML='';
+  if(!roles.length){list.innerHTML='<div style="font-size:.78rem;color:var(--ink3)">No roles created yet. Create roles in the Admin Panel first.</div>';openM('m-chsettings');return;}
+  roles.forEach(role=>{
+    const key=`${curSv}_${chId}_${role.id}`;
+    const perm=chPerms[key]||{allow:[],deny:[]};
+    const row=document.createElement('div');
+    row.className='perm-row';
+    row.innerHTML=`<div class="perm-role-name"><span class="role-color-dot" style="background:${h(role.color||'#4a5fff')}"></span>${h(role.name)}</div>
+      <div class="perm-toggle">
+        <button class="perm-btn${perm.allow&&perm.allow.includes('read_messages')?' allow':''}" data-role="${role.id}" data-perm="read_messages" data-type="allow" onclick="toggleChPerm(this)">Read ✓</button>
+        <button class="perm-btn${perm.deny&&perm.deny.includes('read_messages')?' deny':''}" data-role="${role.id}" data-perm="read_messages" data-type="deny" onclick="toggleChPerm(this)">Read ✗</button>
+        <button class="perm-btn${perm.allow&&perm.allow.includes('send_messages')?' allow':''}" data-role="${role.id}" data-perm="send_messages" data-type="allow" onclick="toggleChPerm(this)">Send ✓</button>
+        <button class="perm-btn${perm.deny&&perm.deny.includes('send_messages')?' deny':''}" data-role="${role.id}" data-perm="send_messages" data-type="deny" onclick="toggleChPerm(this)">Send ✗</button>
+      </div>`;
+    list.appendChild(row);
+  });
+  openM('m-chsettings');
+}
+function toggleChPerm(btn){
+  const roleId=btn.dataset.role,perm=btn.dataset.perm,type=btn.dataset.type;
+  const key=`${curSv}_${chSettingsCh}_${roleId}`;
+  if(!chPerms[key])chPerms[key]={allow:[],deny:[]};
+  const p=chPerms[key];
+  const oppType=type==='allow'?'deny':'allow';
+  // Remove from opposite
+  p[oppType]=p[oppType].filter(x=>x!==perm);
+  // Toggle in current
+  if(p[type].includes(perm)){p[type]=p[type].filter(x=>x!==perm);btn.classList.remove(type==='allow'?'allow':'deny');}
+  else{p[type].push(perm);btn.classList.add(type==='allow'?'allow':'deny');}
+  // Update opposite button visually
+  const oppBtn=btn.parentElement.querySelector(`[data-role="${roleId}"][data-perm="${perm}"][data-type="${oppType}"]`);
+  if(oppBtn)oppBtn.classList.remove(oppType==='allow'?'allow':'deny');
+}
+async function saveChannelSettings(){
+  if(!chSettingsCh||!curSv)return;
+  const name=g('ch-rename-input').value.trim().toLowerCase().replace(/\s+/g,'-');
+  const desc=g('ch-desc-input').value.trim();
+  if(name)await db.collection('servers').doc(curSv).collection('channels').doc(chSettingsCh).update({name,desc});
+  // Save perms to Firestore
+  const batch=db.batch();
+  Object.entries(chPerms).forEach(([key,val])=>{
+    if(key.startsWith(`${curSv}_${chSettingsCh}`)){
+      const ref=db.collection('servers').doc(curSv).collection('channelPerms').doc(key);
+      batch.set(ref,val);
+    }
+  });
+  await batch.commit().catch(()=>{});
+  closeM('m-chsettings');toast('Channel settings saved','success');
+}
+function delCurrentChannel(){if(!chSettingsCh||!curSv)return;closeM('m-chsettings');delChannel({stopPropagation:()=>{}},chSettingsCh);}
+
+// ━━━━━━━ Server Settings ━━━━━━━
+function openServerSettings(){
+  if(!curSvData)return;
+  g('sv-invite-code').textContent=curSvData.inviteCode||'—';
+  g('sv-rename').value=curSvData.name||'';
+  editSvTagsSel=[...(curSvData.tags||[])];
+  buildTagPicker('sv-tags-edit',editSvTagsSel,true);
+  openM('m-svsettings');
+}
+function copyInvite(){
+  const code=g('sv-invite-code').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    const btn=g('invite-copy-btn');btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  });
+}
+function saveServerSettings(){
+  if(!curSv)return;
+  const newName=g('sv-rename').value.trim();
+  const upd={tags:editSvTagsSel};if(newName)upd.name=newName;
+  db.collection('servers').doc(curSv).update(upd).then(()=>{closeM('m-svsettings');if(newName)g('cph-name').textContent=newName;});
+}
 async function joinServer(){
   const code=g('join-code').value.trim().toUpperCase();if(!code)return;
   const errEl=g('join-err');errEl.style.display='none';
   const snap=await db.collection('servers').where('inviteCode','==',code).limit(1).get();
   if(snap.empty){errEl.textContent='Invalid invite code.';errEl.style.display='';return;}
-  const doc=snap.docs[0];closeM('m-join');g('join-code').value='';showServer(doc.id,doc.data());
+  const doc=snap.docs[0];
+  const sv=doc.data();
+  // Check if banned
+  const bans=sv.bans||[];
+  if(bans.find(b=>b.name===ME)){errEl.textContent='You are banned from this server.';errEl.style.display='';return;}
+  closeM('m-join');g('join-code').value='';showServer(doc.id,sv);
 }
-function deleteServer(){if(!curSv)return;if(!confirm('Permanently delete?'))return;db.collection('servers').doc(curSv).delete();closeM('m-svsettings');curSv=null;curCh=null;showDMs();showEmpty();}
-function buildTagPicker(containerId,selArr,isEdit){
-  const container=g(containerId);container.innerHTML='';
-  ALL_TAGS.forEach(tag=>{
-    const chip=document.createElement('span');chip.className='tag-chip'+(selArr.includes(tag)?' on':'');chip.textContent=tag;
-    chip.onclick=()=>{if(selArr.includes(tag))selArr.splice(selArr.indexOf(tag),1);else if(selArr.length<3)selArr.push(tag);chip.classList.toggle('on',selArr.includes(tag));};
+function deleteServer(){
+  if(!curSv)return;if(!confirm('Permanently delete this server?'))return;
+  db.collection('servers').doc(curSv).delete();closeM('m-svsettings');curSv=null;curCh=null;showDMs();showEmpty();
+}
+
+// ━━━━━━━ Admin Panel ━━━━━━━
+function showAdminPanel(){
+  highlightRail('__admin');
+  g('empty').style.display='none';g('chatview').style.display='none';g('friendsview').style.display='none';g('nitroview').style.display='none';
+  g('adminview').style.display='flex';g('mpanel').classList.add('gone');
+  g('dm-section').style.display='';g('sv-section').style.display='none';g('cph-name').textContent='Admin Panel';g('cph-kana').textContent='管理パネル';g('sv-settings-btn').classList.add('gone');
+  adminTabMode='members';
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.toggle('on',t.dataset.atab==='members'));
+  renderAdminTab();
+}
+function adminTab(el){
+  adminTabMode=el.dataset.atab;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  renderAdminTab();
+}
+function renderAdminTab(){
+  if(adminTabMode==='members')renderAdminMembers();
+  else if(adminTabMode==='roles')renderAdminRoles();
+  else if(adminTabMode==='permissions')renderAdminPerms();
+  else if(adminTabMode==='bans')renderAdminBans();
+}
+async function renderAdminMembers(){
+  const body=g('admin-body');
+  // Get all servers owned by ME or all if admin
+  const snap=await db.collection('servers').get();
+  let html='';
+  snap.forEach(doc=>{
+    const sv=doc.data(),svId=doc.id;
+    if(!IS_ADMIN&&sv.owner!==ME)return;
+    html+=`<div style="margin-bottom:1.75rem">
+      <div style="font-size:.82rem;font-weight:800;color:var(--ink2);margin-bottom:.75rem;display:flex;align-items:center;gap:.45rem">
+        <span>${h(sv.icon||ini(sv.name))}</span> ${h(sv.name)}
+      </div>
+      <table class="members-table">
+        <thead><tr><th>Member</th><th>Status</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>`;
+    onlineUsers.forEach(uname=>{
+      if(uname===ME&&!IS_ADMIN)return;// can kick self?
+      const isAdm=adminUsers.has(uname);
+      const isNit=nitroUsers.has(uname);
+      const cls=isAdm?'admin-av':isNit?'nitro-av':'';
+      const roleId=memberRoles[`${svId}_${uname}`];
+      const roles=sv.roles||[];
+      const role=roles.find(r=>r.id===roleId);
+      const tag=userTags[uname]||'';
+      html+=`<tr>
+        <td><div class="member-av-cell"><div class="ma-av ${cls}">${ini(uname)}</div><div><div class="member-name-cell">${h(uname)}${uname===ME?' (you)':''}</div>${tag?`<div style="font-size:.65rem;color:var(--ink4)">${h(tag)}</div>`:''}</div></div></td>
+        <td><span style="display:flex;align-items:center;gap:.3rem;font-size:.8rem"><span style="width:7px;height:7px;background:var(--mint);border-radius:50%;display:inline-block"></span>Online</span></td>
+        <td>${role?`<span class="badge badge-role" style="background:${h(role.color)}">${h(role.name)}</span>`:'<span style="font-size:.75rem;color:var(--ink3)">Default</span>'}</td>
+        <td><div class="td-actions">
+          ${uname!==ME?`<button class="admin-action-btn role-btn" onclick="openAssignRole('${h(uname)}','${svId}')">Assign Role</button>
+          <button class="admin-action-btn kick-btn" onclick="openModAction('kick','${h(uname)}','${svId}')">Kick</button>
+          <button class="admin-action-btn ban-btn" onclick="openModAction('ban','${h(uname)}','${svId}')">Ban</button>`:'<span style="font-size:.73rem;color:var(--ink4)">—</span>'}
+        </div></td>
+      </tr>`;
+    });
+    html+='</tbody></table></div>';
+  });
+  if(!html)html='<div style="color:var(--ink3);font-size:.83rem">No servers found where you have admin access.</div>';
+  body.innerHTML=html;
+}
+async function renderAdminRoles(){
+  const body=g('admin-body');
+  const snap=await db.collection('servers').get();
+  let html='';
+  snap.forEach(doc=>{
+    const sv=doc.data(),svId=doc.id;
+    if(!IS_ADMIN&&sv.owner!==ME)return;
+    const roles=sv.roles||[];
+    html+=`<div style="margin-bottom:2rem">
+      <div style="font-size:.82rem;font-weight:800;color:var(--ink2);margin-bottom:.75rem;display:flex;align-items:center;gap:.45rem">
+        <span>${h(sv.icon||ini(sv.name))}</span>${h(sv.name)}
+      </div>
+      <div class="roles-list">`;
+    roles.forEach(role=>{
+      const pList=role.perms&&role.perms.length?role.perms.map(p=>`<span class="perm-chip active">${PERM_LABELS[p]||p}</span>`).join(''):'<span style="font-size:.73rem;color:var(--ink4)">No extra permissions</span>';
+      html+=`<div class="role-card">
+        <div class="role-color-dot" style="background:${h(role.color||'#4a5fff')}"></div>
+        <div class="role-name">${h(role.name)}</div>
+        <div class="role-perms">${pList}</div>
+        <button class="admin-action-btn small" onclick="openEditRole('${svId}','${role.id}')">Edit</button>
+        <button class="admin-action-btn small kick-btn" onclick="deleteRole('${svId}','${role.id}')">✕</button>
+      </div>`;
+    });
+    html+=`<div class="add-role-btn" onclick="openCreateRole('${svId}')">+ Create New Role</div>`;
+    html+='</div></div>';
+  });
+  if(!html)html='<div style="color:var(--ink3);font-size:.83rem">No servers found.</div>';
+  body.innerHTML=html;
+}
+async function renderAdminPerms(){
+  const body=g('admin-body');
+  if(!curSv){body.innerHTML='<div style="color:var(--ink3);font-size:.83rem">Select a server first to manage channel permissions.</div>';return;}
+  const sv=curSvData;
+  const roles=sv&&sv.roles?sv.roles:[];
+  if(!roles.length){body.innerHTML='<div style="color:var(--ink3);font-size:.83rem">No roles in this server. Create roles first.</div>';return;}
+  const chSnap=await db.collection('servers').doc(curSv).collection('channels').orderBy('createdAt').get();
+  let html=`<div style="font-size:.75rem;color:var(--ink3);margin-bottom:1.25rem">Showing permissions for <strong style="color:var(--ink2)">${h(sv.name)}</strong>. Changes are saved instantly.</div>`;
+  chSnap.forEach(chDoc=>{
+    const ch=chDoc.data(),chId=chDoc.id;
+    html+=`<div class="perms-section">
+      <div class="perm-channel-title"># ${h(ch.name)}</div>
+      <div class="perm-role-rows">`;
+    roles.forEach(role=>{
+      const key=`${curSv}_${chId}_${role.id}`;
+      const perm=chPerms[key]||{allow:[],deny:[]};
+      html+=`<div class="perm-row">
+        <div class="perm-role-name"><span class="role-color-dot" style="background:${h(role.color||'#4a5fff')}"></span>${h(role.name)}</div>
+        <div class="perm-toggle">
+          <button class="perm-btn${perm.allow&&perm.allow.includes('read_messages')?' allow':''}" onclick="quickTogglePerm(this,'${curSv}','${chId}','${role.id}','read_messages','allow')">Read ✓</button>
+          <button class="perm-btn${perm.deny&&perm.deny.includes('read_messages')?' deny':''}" onclick="quickTogglePerm(this,'${curSv}','${chId}','${role.id}','read_messages','deny')">Read ✗</button>
+          <button class="perm-btn${perm.allow&&perm.allow.includes('send_messages')?' allow':''}" onclick="quickTogglePerm(this,'${curSv}','${chId}','${role.id}','send_messages','allow')">Send ✓</button>
+          <button class="perm-btn${perm.deny&&perm.deny.includes('send_messages')?' deny':''}" onclick="quickTogglePerm(this,'${curSv}','${chId}','${role.id}','send_messages','deny')">Send ✗</button>
+        </div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  body.innerHTML=html;
+}
+async function renderAdminBans(){
+  const body=g('admin-body');
+  const snap=await db.collection('servers').get();
+  let html='';
+  snap.forEach(doc=>{
+    const sv=doc.data(),svId=doc.id;
+    if(!IS_ADMIN&&sv.owner!==ME)return;
+    const bans=sv.bans||[];
+    html+=`<div style="margin-bottom:2rem">
+      <div style="font-size:.82rem;font-weight:800;color:var(--ink2);margin-bottom:.75rem">${h(sv.icon||ini(sv.name))} ${h(sv.name)}</div>`;
+    if(!bans.length)html+='<div style="font-size:.78rem;color:var(--ink4)">No bans on this server.</div>';
+    bans.forEach(ban=>{
+      html+=`<div class="ban-item">
+        <div style="font-size:.65rem">🚫</div>
+        <div class="ban-name">${h(ban.name)}</div>
+        <div class="ban-reason">${ban.reason?h(ban.reason):'No reason given'}</div>
+        <button class="unban-btn" onclick="unban('${svId}','${h(ban.name)}')">Unban</button>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  if(!html)html='<div style="color:var(--ink3);font-size:.83rem">No servers found.</div>';
+  body.innerHTML=html;
+}
+
+// ━━━━━━━ Mod Actions ━━━━━━━
+let modActionSvId=null;
+function openModAction(type,target,svId){
+  modActionType=type;modActionTarget=target;modActionSvId=svId;
+  g('modaction-title').textContent=type==='kick'?'⚡ Kick Member':'🚫 Ban Member';
+  g('modaction-target').textContent=target;
+  g('modaction-confirm-btn').textContent=type==='kick'?'Kick':'Ban';
+  g('modaction-reason').value='';
+  openM('m-modaction');
+}
+async function confirmModAction(){
+  const reason=g('modaction-reason').value.trim();
+  if(modActionType==='kick'){
+    // Kick = remove from online (we can't actually disconnect them, but we can show a toast and remove their messages in future / flag)
+    toast(`${modActionTarget} has been kicked. (They can rejoin with the invite code.)`, 'error');
+    // In a real app, you'd revoke access via auth rules
+  } else if(modActionType==='ban'){
+    const svRef=db.collection('servers').doc(modActionSvId);
+    await svRef.update({bans:firebase.firestore.FieldValue.arrayUnion({name:modActionTarget,reason,bannedAt:new Date().toISOString(),bannedBy:ME})});
+    toast(`${modActionTarget} has been banned.`,'error');
+    renderAdminTab();
+  }
+  closeM('m-modaction');
+}
+async function unban(svId,name){
+  const svRef=db.collection('servers').doc(svId);
+  const doc=await svRef.get();const sv=doc.data();
+  const newBans=(sv.bans||[]).filter(b=>b.name!==name);
+  await svRef.update({bans:newBans});
+  toast(`${name} has been unbanned.`,'success');
+  renderAdminBans();
+}
+
+// ━━━━━━━ Roles ━━━━━━━
+let editingRoleId=null,editingRoleSvId=null;
+function openCreateRole(svId){
+  editingRoleId=null;editingRoleSvId=svId;
+  g('role-modal-title').textContent='Create Role';
+  g('role-name-input').value='';
+  rolePickColor=ROLE_COLORS[0];rolePickPerms=[];
+  refreshRoleSwatchUI();refreshRolePermUI();
+  openM('m-role');
+}
+function openEditRole(svId,roleId){
+  editingRoleSvId=svId;editingRoleId=roleId;
+  const roles=curSvData&&curSvData.roles?curSvData.roles:[];
+  // Re-fetch from Firestore
+  db.collection('servers').doc(svId).get().then(doc=>{
+    const sv=doc.data();const role=(sv.roles||[]).find(r=>r.id===roleId);
+    if(!role)return;
+    g('role-modal-title').textContent='Edit Role';
+    g('role-name-input').value=role.name;
+    rolePickColor=role.color||ROLE_COLORS[0];
+    rolePickPerms=[...(role.perms||[])];
+    refreshRoleSwatchUI();refreshRolePermUI();
+    openM('m-role');
+  });
+}
+function buildRoleColorSwatches(){
+  const container=g('role-color-swatches');
+  ROLE_COLORS.forEach(col=>{
+    const sw=document.createElement('div');sw.className='color-swatch'+(col===rolePickColor?' sel':'');
+    sw.style.background=col;sw.dataset.color=col;
+    sw.onclick=()=>{rolePickColor=col;refreshRoleSwatchUI();};
+    container.appendChild(sw);
+  });
+}
+function refreshRoleSwatchUI(){document.querySelectorAll('.color-swatch').forEach(sw=>sw.classList.toggle('sel',sw.dataset.color===rolePickColor));}
+function buildRolePermToggles(){
+  const container=g('role-perm-toggles');
+  ALL_PERMS.forEach(perm=>{
+    const chip=document.createElement('span');chip.className='perm-chip';chip.textContent=PERM_LABELS[perm];chip.dataset.perm=perm;
+    chip.onclick=()=>{
+      if(rolePickPerms.includes(perm))rolePickPerms=rolePickPerms.filter(p=>p!==perm);else rolePickPerms.push(perm);
+      refreshRolePermUI();
+    };
     container.appendChild(chip);
   });
 }
+function refreshRolePermUI(){document.querySelectorAll('#role-perm-toggles .perm-chip').forEach(chip=>chip.classList.toggle('active',rolePickPerms.includes(chip.dataset.perm)));}
+async function saveRole(){
+  const name=g('role-name-input').value.trim();if(!name||!editingRoleSvId)return;
+  const svRef=db.collection('servers').doc(editingRoleSvId);
+  const doc=await svRef.get();const sv=doc.data();
+  let roles=[...(sv.roles||[])];
+  if(editingRoleId){roles=roles.map(r=>r.id===editingRoleId?{...r,name,color:rolePickColor,perms:rolePickPerms}:r);}
+  else{roles.push({id:randCode(),name,color:rolePickColor,perms:rolePickPerms});}
+  await svRef.update({roles});
+  if(curSvData&&curSvData===sv||editingRoleSvId===curSv){curSvData={...sv,roles};}// update local
+  closeM('m-role');toast('Role saved','success');
+  // Refresh admin view
+  if(adminTabMode==='roles')renderAdminRoles();
+}
+async function deleteRole(svId,roleId){
+  if(!confirm('Delete this role?'))return;
+  const svRef=db.collection('servers').doc(svId);
+  const doc=await svRef.get();const sv=doc.data();
+  const roles=(sv.roles||[]).filter(r=>r.id!==roleId);
+  await svRef.update({roles});toast('Role deleted','success');
+  renderAdminRoles();
+}
 
-// ── DMs ──
+// Assign role
+let assignRoleTarget=null,assignRoleSvId=null;
+async function openAssignRole(uname,svId){
+  assignRoleTarget=uname;assignRoleSvId=svId;
+  g('assign-role-target').textContent=uname;
+  const doc=await db.collection('servers').doc(svId).get();const sv=doc.data();
+  const roles=sv.roles||[];
+  const sel=g('assign-role-select');
+  sel.innerHTML='<option value="">Default (no role)</option>';
+  roles.forEach(r=>{sel.innerHTML+=`<option value="${h(r.id)}">${h(r.name)}</option>`;});
+  const cur=memberRoles[`${svId}_${uname}`];if(cur)sel.value=cur;
+  openM('m-assign-role');
+}
+function confirmAssignRole(){
+  const roleId=g('assign-role-select').value;
+  memberRoles[`${assignRoleSvId}_${assignRoleTarget}`]=roleId||null;
+  closeM('m-assign-role');toast(`Role assigned to ${assignRoleTarget}`,'success');
+  renderAdminMembers();
+}
+
+function quickTogglePerm(btn,svId,chId,roleId,perm,type){
+  const key=`${svId}_${chId}_${roleId}`;
+  if(!chPerms[key])chPerms[key]={allow:[],deny:[]};
+  const p=chPerms[key];const oppType=type==='allow'?'deny':'allow';
+  p[oppType]=p[oppType].filter(x=>x!==perm);
+  if(p[type].includes(perm)){p[type]=p[type].filter(x=>x!==perm);btn.classList.remove(type==='allow'?'allow':'deny');}
+  else{p[type].push(perm);btn.classList.add(type==='allow'?'allow':'deny');}
+  // Update opposite
+  const row=btn.parentElement;
+  const oppBtn=row.querySelector(`[onclick*="'${roleId}','${perm}','${oppType}'"]`);
+  if(oppBtn)oppBtn.classList.remove(oppType==='allow'?'allow':'deny');
+  // Persist
+  db.collection('servers').doc(svId).collection('channelPerms').doc(key).set(chPerms[key]).catch(()=>{});
+}
+
+// ━━━━━━━ DMs ━━━━━━━
 function showDMs(){
   curSv=null;curCh=null;highlightRail('__dm');
-  g('cph-name').textContent='Direct Messages';g('sv-settings-btn').classList.add('gone');
+  g('cph-name').textContent='Direct Messages';g('cph-kana').textContent='ダイレクトメッセージ';
+  g('sv-settings-btn').classList.add('gone');
   g('dm-section').style.display='';g('sv-section').style.display='none';g('mpanel').classList.add('gone');
-  g('sv-tags-row').innerHTML='';g('friendsview').style.display='none';g('nitroview').style.display='none';
+  g('sv-tags-row').innerHTML='';
+  g('friendsview').style.display='none';g('nitroview').style.display='none';g('adminview').style.display='none';
   if(!curDM)showEmpty();
 }
 function listenDMs(){
@@ -818,8 +1450,7 @@ function listenDMs(){
     docs.forEach(dm=>{
       const isGrp=dm.isGroup;
       const dname=isGrp?dm.name:dm.members.find(m=>m!==ME)||'?';
-      const el=document.createElement('div');
-      el.className='citem'+(curDM===dm.id?' on':'');el.dataset.id=dm.id;
+      const el=document.createElement('div');el.className='citem'+(curDM===dm.id?' on':'');el.dataset.id=dm.id;
       el.innerHTML=`<span class="ci-ico">${isGrp?'👥':'💬'}</span><span class="ci-name">${h(dname)}</span>`;
       el.onclick=()=>openDM(dm.id,dm);
       list.appendChild(el);
@@ -830,28 +1461,33 @@ function listenDMs(){
 function openDM(dmId,dm){
   curDM=dmId;curSv=null;curCh=null;clearChat();clearReply();
   document.querySelectorAll('#dm-list .citem').forEach(el=>el.classList.toggle('on',el.dataset.id===dmId));
-  const isGrp=dm.isGroup;
-  const dname=isGrp?dm.name:dm.members.find(m=>m!==ME)||'?';
+  const isGrp=dm.isGroup;const dname=isGrp?dm.name:dm.members.find(m=>m!==ME)||'?';
   g('chdr-ico').textContent=isGrp?'👥':'💬';g('chdr-name').textContent=dname;
   g('chdr-desc').textContent=isGrp?`${dm.members.length} members`:'';
   g('welcome-msg').textContent=isGrp?`Start of ${dname}.`:`Private chat with ${dname}.`;
-  g('msginput').placeholder=`Message ${dname}…`;g('mpanel').classList.add('gone');g('sv-tags-row').innerHTML='';
+  g('msginput').placeholder=`Message ${dname}…`;
+  g('mpanel').classList.add('gone');g('sv-tags-row').innerHTML='';g('ch-settings-hdr-btn').style.display='none';
+  g('inputbox').style.opacity='1';g('msginput').disabled=false;g('sendbtn').disabled=false;
+  g('msginput').placeholder=`Message ${dname}…`;
   showChat();listenMsgs(`dms/${dmId}/messages`);listenTyp(`dms/${dmId}/typing`);
 }
 function dmTab(tab){dmTabMode=tab;g('t-dm').classList.toggle('on',tab==='dm');g('t-grp').classList.toggle('on',tab==='grp');g('dm-pane').style.display=tab==='dm'?'':'none';g('grp-pane').style.display=tab==='grp'?'':'none';}
 function renderUList(containerId,q,multi){
   const con=g(containerId);const query=q.toLowerCase();
   const filtered=onlineUsers.filter(m=>m!==ME&&m.toLowerCase().includes(query));
-  con.innerHTML=filtered.map(name=>{const sel=grpSel.includes(name);return`<div class="uitem${sel?' sel':''}" onclick="selUser('${h(name)}',${multi})"><div class="uav">${ini(name)}</div><span class="uname">${h(name)}</span>${sel?'<span class="uchk">✓</span>':''}</div>`;}).join('')||'<div style="font-size:.78rem;color:var(--ink3);padding:.4rem">No users online</div>';
+  con.innerHTML=filtered.map(name=>{const sel=grpSel.includes(name);return`<div style="display:flex;align-items:center;gap:.55rem;padding:.4rem .55rem;border-radius:var(--r6);cursor:pointer;background:${sel?'#4a5fff15':'transparent'};transition:background .12s" onclick="selUser('${h(name)}',${multi})">
+    <div style="width:26px;height:26px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800">${ini(name)}</div>
+    <span style="font-size:.84rem;color:var(--ink2)">${h(name)}</span>
+    ${sel?'<span style="margin-left:auto;color:var(--indigo2);font-size:.78rem">✓</span>':''}
+  </div>`;}).join('')||'<div style="font-size:.78rem;color:var(--ink4);padding:.4rem">No users online</div>';
 }
 function selUser(name,multi){if(!multi){grpSel=[name];}else{if(grpSel.includes(name))grpSel=grpSel.filter(n=>n!==name);else grpSel.push(name);}renderUList(multi?'grp-ul':'dm-ul',multi?g('grp-q').value:g('dm-q').value,multi);}
 async function openDMorGrp(){
   if(dmTabMode==='dm'){
-    if(!grpSel.length)return;
-    const other=grpSel[0];const members=[ME,other].sort();const dmId=members.join('__');
+    if(!grpSel.length)return;const other=grpSel[0];const members=[ME,other].sort();const dmId=members.join('__');
     await db.collection('dms').doc(dmId).set({members,isGroup:false,lastAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     closeM('m-dm');grpSel=[];showDMs();openDM(dmId,{members,isGroup:false});
-  } else {
+  }else{
     const gname=g('grp-n').value.trim();if(!gname||!grpSel.length)return;
     const members=[...new Set([ME,...grpSel])];
     const ref=await db.collection('dms').add({members,isGroup:true,name:gname,createdBy:ME,lastAt:firebase.firestore.FieldValue.serverTimestamp()});
@@ -859,10 +1495,13 @@ async function openDMorGrp(){
   }
 }
 
-// ── Friends ──
+// ━━━━━━━ Friends ━━━━━━━
 function listenFriends(){
   unsubFriends=db.collection('friends').where('to','==',ME).where('status','==','pending').onSnapshot(snap=>{
-    const count=snap.size;g('friend-badge').classList.toggle('gone',count===0);g('pending-count').textContent=count>0?`(${count})`:'';renderFriendsTab();
+    const count=snap.size;
+    g('friend-badge').classList.toggle('show',count>0);
+    g('pending-count').textContent=count>0?`(${count})`:'';
+    renderFriendsTab();
   });
 }
 async function sendFriendReq(){
@@ -871,17 +1510,17 @@ async function sendFriendReq(){
   const existing=await db.collection('friends').where('from','==',ME).where('to','==',target).get();
   if(!existing.empty){msg.style.color='var(--red)';msg.textContent='Request already sent.';return;}
   await db.collection('friends').add({from:ME,to:target,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  msg.style.color='var(--green)';msg.textContent=`Friend request sent to ${target}!`;g('af-input').value='';setTimeout(()=>msg.textContent='',3000);
+  msg.style.color='var(--mint)';msg.textContent=`Request sent to ${target}!`;g('af-input').value='';setTimeout(()=>msg.textContent='',3000);
 }
 async function renderFriendsTab(){
   if(friendTabMode==='friends'){
     const[sent,recv]=await Promise.all([db.collection('friends').where('from','==',ME).where('status','==','accepted').get(),db.collection('friends').where('to','==',ME).where('status','==','accepted').get()]);
     const friends=new Set();sent.forEach(d=>friends.add(d.data().to));recv.forEach(d=>friends.add(d.data().from));
     const arr=[...friends];const el=g('fp-friends');
-    if(!arr.length){el.innerHTML='<div style="color:var(--ink3);font-size:.82rem">No friends yet — add someone!</div>';return;}
+    if(!arr.length){el.innerHTML='<div style="color:var(--ink3);font-size:.82rem">No friends yet.</div>';return;}
     el.innerHTML='<div class="fp-section-title">Friends — '+arr.length+'</div>';
-    arr.forEach(name=>{const online=onlineUsers.includes(name);el.innerHTML+=`<div class="fitem"><div class="fitem-av${online?' online':''}">${ini(name)}</div><div class="fitem-info"><div class="fitem-name">${h(name)}</div><div class="fitem-status">${online?'🟢 Online':'⚫ Offline'}</div></div><div class="fitem-acts"><button class="fact-btn dm-btn" onclick="quickDM('${h(name)}')">Message</button><button class="fact-btn r" onclick="removeFriend('${h(name)}')">Remove</button></div></div>`;});
-  } else if(friendTabMode==='pending'){
+    arr.forEach(name=>{const online=onlineUsers.includes(name);el.innerHTML+=`<div class="fitem"><div class="fitem-av${online?' online':''}">${ini(name)}</div><div class="fitem-info"><div class="fitem-name">${h(name)}</div><div class="fitem-status">${online?'🟢 Online':'⚫ Offline'}</div></div><div class="fitem-acts"><button class="fact-btn" onclick="quickDM('${h(name)}')">Message</button><button class="fact-btn r" onclick="removeFriend('${h(name)}')">Remove</button></div></div>`;});
+  }else if(friendTabMode==='pending'){
     const[incoming,outgoing]=await Promise.all([db.collection('friends').where('to','==',ME).where('status','==','pending').get(),db.collection('friends').where('from','==',ME).where('status','==','pending').get()]);
     const el=g('fp-pending');el.innerHTML='';
     if(incoming.empty&&outgoing.empty){el.innerHTML='<div style="color:var(--ink3);font-size:.82rem">No pending requests.</div>';return;}
@@ -894,64 +1533,75 @@ function declineFriend(docId){db.collection('friends').doc(docId).delete();}
 function cancelFriendReq(docId){db.collection('friends').doc(docId).delete();}
 async function removeFriend(name){if(!confirm(`Remove ${name}?`))return;const[a,b]=await Promise.all([db.collection('friends').where('from','==',ME).where('to','==',name).get(),db.collection('friends').where('from','==',name).where('to','==',ME).get()]);const batch=db.batch();a.forEach(d=>batch.delete(d.ref));b.forEach(d=>batch.delete(d.ref));await batch.commit();renderFriendsTab();}
 async function quickDM(name){const members=[ME,name].sort();const dmId=members.join('__');await db.collection('dms').doc(dmId).set({members,isGroup:false,lastAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});showDMs();g('friendsview').style.display='none';openDM(dmId,{members,isGroup:false});}
-function showFriends(){highlightRail('__friends');curSv=null;curCh=null;curDM=null;g('mpanel').classList.add('gone');g('sv-tags-row').innerHTML='';g('empty').style.display='none';g('chatview').style.display='none';g('friendsview').style.display='flex';g('nitroview').style.display='none';friendTabMode='friends';document.querySelectorAll('.fp-tab').forEach(t=>t.classList.toggle('on',t.dataset.tab==='friends'));g('fp-friends').style.display='';g('fp-pending').style.display='none';g('fp-add').style.display='none';renderFriendsTab();}
+function showFriends(){
+  highlightRail('__friends');curSv=null;curCh=null;curDM=null;
+  g('mpanel').classList.add('gone');g('sv-tags-row').innerHTML='';
+  g('empty').style.display='none';g('chatview').style.display='none';g('friendsview').style.display='flex';g('nitroview').style.display='none';g('adminview').style.display='none';
+  friendTabMode='friends';document.querySelectorAll('.fp-tab').forEach(t=>t.classList.toggle('on',t.dataset.tab==='friends'));
+  g('fp-friends').style.display='';g('fp-pending').style.display='none';g('fp-add').style.display='none';renderFriendsTab();
+}
 function fTab(el){friendTabMode=el.dataset.tab;document.querySelectorAll('.fp-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');g('fp-friends').style.display=friendTabMode==='friends'?'':'none';g('fp-pending').style.display=friendTabMode==='pending'?'':'none';g('fp-add').style.display=friendTabMode==='add'?'':'none';renderFriendsTab();}
 
-// ── Nitro ──
+// ━━━━━━━ Nitro ━━━━━━━
 function showNitro(){
   highlightRail('__nitro');curSv=null;curCh=null;curDM=null;
   g('mpanel').classList.add('gone');g('sv-tags-row').innerHTML='';
-  g('empty').style.display='none';g('chatview').style.display='none';g('friendsview').style.display='none';
+  g('empty').style.display='none';g('chatview').style.display='none';g('friendsview').style.display='none';g('adminview').style.display='none';
   g('nitroview').style.display='flex';
-  g('dm-section').style.display='';g('sv-section').style.display='none';g('cph-name').textContent='Nitro';g('sv-settings-btn').classList.add('gone');
+  g('dm-section').style.display='';g('sv-section').style.display='none';g('cph-name').textContent='Nitro';g('cph-kana').textContent='ニトロ';g('sv-settings-btn').classList.add('gone');
 }
-function openPayModal(){g('pay-form-view').style.display='';g('pay-success-view').style.display='none';openM('m-pay');}
-function processPayment(){
-  const num=g('card-num').value.replace(/\s/g,'');
-  const exp=g('card-exp').value;const cvv=g('card-cvv').value;const name=g('card-name').value.trim();
-  if(num.length<15||!exp||cvv.length<3||!name){alert('Please fill in all card details.');return;}
-  g('pay-form-view').style.display='none';g('pay-success-view').style.display='';
-  IS_NITRO=true;localStorage.setItem('sc_nitro','1');nitroUsers.add(ME);updateUserBar();updatePres();
-}
-function closePaySuccess(){closeM('m-pay');showNitro();}
 function fmtCard(el){let v=el.value.replace(/\D/g,'').slice(0,16);el.value=v.replace(/(\d{4})(?=\d)/g,'$1 ');}
 function fmtExp(el){let v=el.value.replace(/\D/g,'').slice(0,4);if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2);el.value=v;}
 
-// ── Messages ──
+// ━━━━━━━ Messages ━━━━━━━
 function listenMsgs(path){
   if(unsubMsgs)unsubMsgs();renderedIds=new Set();lastAuth=null;lastTs=null;msgDataCache={};
+  const el=g('msgs');el.innerHTML='<div class="sysmsg" id="welcome-msg"></div>';
   unsubMsgs=db.collection(path).orderBy('timestamp','asc').limitToLast(200).onSnapshot(snap=>{
     snap.docChanges().forEach(ch=>{
       if(ch.type==='added'&&!renderedIds.has(ch.doc.id)){renderedIds.add(ch.doc.id);msgDataCache[ch.doc.id]=ch.doc.data();appendMsg(ch.doc.id,ch.doc.data());}
       if(ch.type==='modified'&&renderedIds.has(ch.doc.id)){msgDataCache[ch.doc.id]=ch.doc.data();updateMsgEl(ch.doc.id,ch.doc.data());}
+      if(ch.type==='removed'&&renderedIds.has(ch.doc.id)){const el2=document.querySelector(`.msg[data-id="${ch.doc.id}"]`);if(el2)el2.remove();renderedIds.delete(ch.doc.id);delete msgDataCache[ch.doc.id];}
     });
   });
 }
-
 function appendMsg(id,data){
   const wrap=g('msgs');
   const{author,text,imageUrl,voiceUrl,voiceDur,replyToId,replyToAuthor,replyToText,reactions={},edited,timestamp}=data;
   const ts=timestamp?timestamp.toDate():new Date();
   const dayKey=ts.toDateString();
-  if(!wrap.querySelector(`[data-day="${dayKey}"]`)){const dd=document.createElement('div');dd.className='daydiv';dd.dataset.day=dayKey;dd.textContent=ts.toLocaleDateString('en-SG',{weekday:'long',month:'long',day:'numeric'});wrap.appendChild(dd);lastAuth=null;}
+  if(!wrap.querySelector(`[data-day="${dayKey}"]`)){
+    const dd=document.createElement('div');dd.className='daydiv';dd.dataset.day=dayKey;
+    const dayStr=ts.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+    dd.textContent=dayStr;wrap.appendChild(dd);lastAuth=null;
+  }
   const timeStr=ts.toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
   const grouped=author===lastAuth&&lastTs&&(ts-lastTs<5*60000);
   lastAuth=author;lastTs=ts;
-  const isNitro=nitroUsers.has(author)||author===ME&&IS_NITRO;
+  const isNitro=nitroUsers.has(author)||(author===ME&&IS_NITRO);
+  const isAdm=adminUsers.has(author)||(author===ME&&IS_ADMIN);
+  const tag=userTags[author]||null;
+  const roleId=curSv?memberRoles[`${curSv}_${author}`]||null:null;
+  let roleBadge='';
+  if(roleId&&curSvData){const role=(curSvData.roles||[]).find(r=>r.id===roleId);if(role)roleBadge=`<span class="badge badge-role" style="background:${h(role.color)};font-size:.56rem">${h(role.name)}</span>`;}
   const el=document.createElement('div');
   el.className='msg msg-anim'+(grouped?' grouped':'');el.dataset.id=id;
-  let inner=`
-    <div class="mav${grouped?' hid':''}">${ini(author)}</div>
+  const avatarBg=isAdm?'background:var(--admin-grad)':isNitro?'background:var(--nitro-grad)':'background:var(--grad)';
+  el.innerHTML=`
+    <div class="mav${grouped?' hid':''}" style="${avatarBg}">${ini(author)}</div>
     <div class="mbody">
       <div class="mmeta">
-        <span class="mauthor${author===ME?' me':''}${isNitro?' nitro-user':''}">${h(author)}${isNitro&&author!==ME?'<span style="font-size:.6rem;background:var(--nitro-grad);color:#000;padding:1px 4px;border-radius:999px;margin-left:.3rem;font-weight:800">⚡</span>':''}</span>
+        <span class="mauthor${author===ME?' me':''}${isNitro&&!isAdm?' nitro-user':''}${isAdm?' admin-user':''}">${h(author)}</span>
+        ${isAdm?'<span class="badge badge-admin" style="font-size:.55rem">ADMIN</span>':''}
+        ${tag&&!isAdm?`<span class="badge badge-role" style="background:var(--grad);font-size:.56rem">${h(tag)}</span>`:''}
+        ${roleBadge}
         <span class="mtime">${timeStr}</span>
         ${edited?'<span class="edited-tag">(edited)</span>':''}
       </div>
       ${replyToId?`<div class="reply-bar"><span class="rb-author">↩ ${h(replyToAuthor)}</span><span class="rb-text">${h(replyToText||'')}</span></div>`:''}
       ${text?`<div class="mtext" id="mtext-${id}">${h(text)}</div>`:''}
       ${imageUrl?`<img class="msg-img" src="${imageUrl}" onclick="openLightbox(this.src)" alt="image">`:''}
-      ${voiceUrl?renderVoiceMsg(voiceUrl,voiceDur||0):''}
+      ${voiceUrl?renderVoiceMsg(id,voiceUrl,voiceDur||0):''}
       <div class="reactions" id="reactions-${id}">${renderReactions(id,reactions)}</div>
     </div>
     ${grouped?`<span class="gts">${timeStr}</span>`:''}
@@ -959,13 +1609,11 @@ function appendMsg(id,data){
       <button class="ma-btn" onclick="showEmojiReact(event,'${id}')" title="React">😊</button>
       <button class="ma-btn" onclick="setReply('${id}')" title="Reply">↩</button>
       ${author===ME?`<button class="ma-btn" onclick="startEdit('${id}')" title="Edit">✏</button>`:''}
-      ${author===ME?`<button class="ma-btn" onclick="deleteMsg('${id}')" title="Delete" style="color:var(--red)">🗑</button>`:''}
+      ${(author===ME||IS_ADMIN)?`<button class="ma-btn red" onclick="deleteMsg('${id}')" title="Delete">🗑</button>`:''}
     </div>
   `;
-  el.innerHTML=inner;
   wrap.appendChild(el);scrollBot();
 }
-
 function renderReactions(msgId,reactions){
   if(!reactions||!Object.keys(reactions).length)return'';
   return Object.entries(reactions).map(([emoji,users])=>{
@@ -974,90 +1622,75 @@ function renderReactions(msgId,reactions){
     return`<span class="reaction${mine?' mine':''}" onclick="toggleReaction('${msgId}','${emoji}')" title="${users.join(', ')}"><span class="rc">${emoji}</span><span class="rn">${users.length}</span></span>`;
   }).join('');
 }
-
-function renderVoiceMsg(url,dur){
-  const bars=Array.from({length:28},(_,i)=>{const h=Math.floor(Math.random()*16+4);return`<div class="wv-bar" style="height:${h}px"></div>`;}).join('');
-  const durStr=dur>=60?`${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')}`:`0:${String(dur).padStart(2,'0')}`;
-  return`<div class="voice-msg"><button class="voice-play" onclick="playVoice(this,'${url}')">▶</button><div class="voice-waveform">${bars}</div><span class="voice-dur">${durStr}</span></div>`;
+function renderVoiceMsg(msgId,url,dur){
+  const bars=Array.from({length:26},()=>{const h=Math.floor(Math.random()*14+4);return`<div class="wv-bar" style="height:${h}px"></div>`;}).join('');
+  const d=dur>=60?`${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')}`:`0:${String(dur).padStart(2,'0')}`;
+  return`<div class="voice-msg"><button class="voice-play" onclick="playVoice(this,'${url}')">▶</button><div class="voice-waveform">${bars}</div><span class="voice-dur">${d}</span></div>`;
 }
-
 function updateMsgEl(id,data){
   const el=document.querySelector(`.msg[data-id="${id}"]`);if(!el)return;
-  const textEl=el.querySelector(`#mtext-${id}`);
-  if(textEl&&data.text){textEl.textContent=data.text;}
-  const editedTag=el.querySelector('.mtime');
-  if(editedTag&&data.edited){let et=el.querySelector('.edited-tag');if(!et){et=document.createElement('span');et.className='edited-tag';et.textContent='(edited)';editedTag.after(et);}}
-  const reactDiv=el.querySelector(`#reactions-${id}`);
-  if(reactDiv)reactDiv.innerHTML=renderReactions(id,data.reactions||{});
+  const textEl=el.querySelector(`#mtext-${id}`);if(textEl&&data.text)textEl.textContent=data.text;
+  const reactDiv=el.querySelector(`#reactions-${id}`);if(reactDiv)reactDiv.innerHTML=renderReactions(id,data.reactions||{});
+  if(data.edited&&!el.querySelector('.edited-tag')){const mt=el.querySelector('.mtime');if(mt){const et=document.createElement('span');et.className='edited-tag';et.textContent='(edited)';mt.after(et);}}
 }
 
-// ── Reactions ──
-let emojiPickerMsgId=null,emojiPickerEl=null;
+// ━━━━━━━ Reactions ━━━━━━━
 function showEmojiReact(e,msgId){
   e.stopPropagation();
   if(emojiPickerEl){emojiPickerEl.remove();emojiPickerEl=null;if(emojiPickerMsgId===msgId)return;}
   emojiPickerMsgId=msgId;
-  const picker=document.createElement('div');picker.className='emoji-picker';
+  const picker=document.createElement('div');picker.className='emoji-picker';picker.style.position='absolute';picker.style.right='0';picker.style.bottom='calc(100% + 4px)';picker.style.left='auto';
   EMOJIS.forEach(em=>{const btn=document.createElement('span');btn.className='ep-emoji';btn.textContent=em;btn.onclick=ev=>{ev.stopPropagation();toggleReaction(msgId,em);picker.remove();emojiPickerEl=null;};picker.appendChild(btn);});
-  document.body.appendChild(picker);
-  picker.style.position='fixed';picker.style.left=Math.min(e.clientX,window.innerWidth-230)+'px';picker.style.top=(e.clientY-picker.offsetHeight-8)+'px';picker.style.zIndex='500';
-  emojiPickerEl=picker;
-  e.currentTarget.closest('.msg').appendChild(picker);
-  picker.style.position='absolute';picker.style.right='0';picker.style.bottom='calc(100% + 4px)';picker.style.top='auto';picker.style.left='auto';
+  e.currentTarget.closest('.msg-actions').appendChild(picker);emojiPickerEl=picker;
 }
 async function toggleReaction(msgId,emoji){
   const path=msgPath();if(!path)return;
   const msgRef=db.collection(path).doc(msgId);
-  const data=msgDataCache[msgId]||{};
-  const reactions=data.reactions||{};
-  const users=reactions[emoji]||[];
-  let newUsers;
-  if(users.includes(ME))newUsers=users.filter(u=>u!==ME);
-  else newUsers=[...users,ME];
-  const upd={[`reactions.${emoji}`]:newUsers};
-  await msgRef.update(upd);
+  const data=msgDataCache[msgId]||{};const reactions=data.reactions||{};
+  const users=reactions[emoji]||[];let newUsers;
+  if(users.includes(ME))newUsers=users.filter(u=>u!==ME);else newUsers=[...users,ME];
+  await msgRef.update({[`reactions.${emoji}`]:newUsers});
 }
 
-// ── Reply ──
+// ━━━━━━━ Reply ━━━━━━━
 function setReply(msgId){
   const data=msgDataCache[msgId];if(!data)return;
   replyTo={id:msgId,author:data.author,text:data.text||''};
-  g('ri-name-label').textContent=data.author;g('reply-indicator').style.display='flex';
-  g('msginput').focus();
+  g('ri-name-label').textContent=data.author;g('reply-indicator').style.display='flex';g('msginput').focus();
 }
 function clearReply(){replyTo=null;g('reply-indicator').style.display='none';}
 
-// ── Edit / Delete ──
+// ━━━━━━━ Edit/Delete ━━━━━━━
 function startEdit(msgId){
   const data=msgDataCache[msgId];if(!data||data.author!==ME)return;
   const textEl=document.querySelector(`#mtext-${msgId}`);if(!textEl)return;
-  const orig=data.text||'';
-  textEl.style.display='none';
+  const orig=data.text||'';textEl.style.display='none';
   const ta=document.createElement('textarea');ta.className='edit-input';ta.value=orig;ta.rows=2;
   const acts=document.createElement('div');acts.className='edit-acts';
-  acts.innerHTML=`<button onclick="saveEdit('${msgId}')">Save</button><button onclick="cancelEdit('${msgId}')">Cancel</button>`;
+  acts.innerHTML=`<button class="save-edit" onclick="saveEdit('${msgId}')">Save (Enter)</button><button onclick="cancelEdit('${msgId}')">Cancel (Esc)</button>`;
   textEl.after(ta);ta.after(acts);ta.focus();resize(ta);
   ta.addEventListener('input',()=>resize(ta));
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveEdit(msgId);}if(e.key==='Escape')cancelEdit(msgId);});
 }
-function cancelEdit(msgId){const textEl=document.querySelector(`#mtext-${msgId}`);if(!textEl)return;textEl.style.display='';const ta=textEl.nextSibling;if(ta&&ta.tagName==='TEXTAREA')ta.remove();const acts=document.querySelector(`#mtext-${msgId}`)?.nextSibling;if(acts&&acts.classList?.contains('edit-acts'))acts.remove();document.querySelectorAll(`[id="mtext-${msgId}"] ~ *`).forEach(el=>{if(el.classList?.contains('edit-acts'))el.remove();});}
+function cancelEdit(msgId){
+  const textEl=document.querySelector(`#mtext-${msgId}`);if(!textEl)return;
+  textEl.style.display='';
+  const sib=textEl.nextSibling;if(sib&&sib.tagName==='TEXTAREA'){const acts2=sib.nextSibling;sib.remove();if(acts2&&acts2.classList&&acts2.classList.contains('edit-acts'))acts2.remove();}
+}
 async function saveEdit(msgId){
-  const ta=document.querySelector(`#mtext-${msgId}`).nextSibling;if(!ta)return;
+  const textEl=document.querySelector(`#mtext-${msgId}`);const ta=textEl?textEl.nextSibling:null;if(!ta)return;
   const newText=ta.value.trim();if(!newText)return;
   const path=msgPath();if(!path)return;
-  await db.collection(path).doc(msgId).update({text:newText,edited:true});
-  cancelEdit(msgId);
+  await db.collection(path).doc(msgId).update({text:newText,edited:true});cancelEdit(msgId);
 }
 async function deleteMsg(msgId){
   if(!confirm('Delete this message?'))return;
   const path=msgPath();if(!path)return;
   await db.collection(path).doc(msgId).delete();
-  const el=document.querySelector(`.msg[data-id="${msgId}"]`);if(el)el.remove();
-  delete msgDataCache[msgId];
 }
 function msgPath(){if(curDM)return`dms/${curDM}/messages`;if(curSv&&curCh)return`servers/${curSv}/channels/${curCh}/messages`;return null;}
 
-// ── Send message ──
+// ━━━━━━━ Send ━━━━━━━
 async function sendMsg(){
   const input=g('msginput');const text=input.value.trim();if(!text)return;
   input.value='';input.style.height='auto';
@@ -1070,25 +1703,24 @@ async function sendMsg(){
   await db.collection(path).add(msgData).catch(e=>console.error(e));
 }
 
-// ── Image Upload ──
+// ━━━━━━━ Image Upload ━━━━━━━
 async function handleImgUpload(input){
-  const file=input.files[0];if(!file)return;
-  input.value='';
+  const file=input.files[0];if(!file)return;input.value='';
   const path=msgPath();if(!path)return;
   const reader=new FileReader();
   reader.onload=async e=>{
-    const imageUrl=e.target.result; // base64 for demo (Firebase Storage would be better)
+    const imageUrl=e.target.result;
     const msgData={author:ME,imageUrl,timestamp:firebase.firestore.FieldValue.serverTimestamp()};
     if(replyTo){msgData.replyToId=replyTo.id;msgData.replyToAuthor=replyTo.author;msgData.replyToText=replyTo.text;}
     clearReply();
     if(curDM)db.collection('dms').doc(curDM).update({lastAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
-    await db.collection(path).add(msgData).catch(e=>console.error('img upload error:',e));
+    await db.collection(path).add(msgData).catch(e=>console.error(e));
   };
   reader.readAsDataURL(file);
 }
 function openLightbox(src){g('lb-img').src=src;g('lightbox').classList.add('on');}
 
-// ── Voice Messages ──
+// ━━━━━━━ Voice ━━━━━━━
 async function toggleRecord(){
   if(isRecording){stopRecord();return;}
   try{
@@ -1100,8 +1732,7 @@ async function toggleRecord(){
       const blob=new Blob(audioChunks,{type:'audio/webm'});
       const reader=new FileReader();
       reader.onload=async ev=>{
-        const voiceUrl=ev.target.result;
-        const path=msgPath();if(!path)return;
+        const voiceUrl=ev.target.result;const path=msgPath();if(!path)return;
         const dur=Math.round((Date.now()-recStart)/1000);
         const msgData={author:ME,voiceUrl,voiceDur:dur,timestamp:firebase.firestore.FieldValue.serverTimestamp()};
         if(replyTo){msgData.replyToId=replyTo.id;msgData.replyToAuthor=replyTo.author;msgData.replyToText=replyTo.text;}
@@ -1111,59 +1742,94 @@ async function toggleRecord(){
       };
       reader.readAsDataURL(blob);
     };
-    recStart=Date.now();
-    mediaRec.start();isRecording=true;
+    recStart=Date.now();mediaRec.start();isRecording=true;
     g('voice-btn').classList.add('recording');g('voice-btn').title='Stop recording';
-  } catch(err){alert('Microphone access denied.');}
+  }catch(err){toast('Microphone access denied.','error');}
 }
-let recStart=0;
 function stopRecord(){if(mediaRec&&isRecording){mediaRec.stop();isRecording=false;g('voice-btn').classList.remove('recording');g('voice-btn').title='Voice message';}}
-
-// ── Voice Playback ──
-let curAudio=null;
 function playVoice(btn,url){
   if(curAudio){curAudio.pause();curAudio=null;document.querySelectorAll('.voice-play').forEach(b=>b.textContent='▶');if(btn.textContent==='▶')return;}
-  curAudio=new Audio(url);curAudio.play();btn.textContent='⏸';
-  curAudio.onended=()=>{btn.textContent='▶';curAudio=null;};
+  curAudio=new Audio(url);curAudio.play();btn.textContent='⏸';curAudio.onended=()=>{btn.textContent='▶';curAudio=null;};
 }
 
-// ── Emoji picker (input) ──
+// ━━━━━━━ Emoji Picker (input) ━━━━━━━
 function buildEmojiPicker(){
-  const pick=g('input-emoji-picker');pick.style.width='220px';pick.style.maxHeight='160px';pick.style.overflowY='auto';
+  const pick=g('input-emoji-picker');
   EMOJIS.forEach(em=>{const btn=document.createElement('span');btn.className='ep-emoji';btn.textContent=em;btn.onclick=e=>{e.stopPropagation();const mi=g('msginput');mi.value+=em;mi.focus();};pick.appendChild(btn);});
 }
 function toggleEmojiPicker(){const p=g('input-emoji-picker');p.style.display=p.style.display==='none'?'flex':'none';}
 
-// ── Typing ──
+// ━━━━━━━ Typing ━━━━━━━
 function typPath(){if(curDM)return`dms/${curDM}/typing`;if(curSv&&curCh)return`servers/${curSv}/channels/${curCh}/typing`;return null;}
 function sendTypSignal(){const p=typPath();if(!p)return;const now=Date.now();if(now-lastTypSent<3000)return;lastTypSent=now;db.collection(p).doc(ME).set({name:ME,ts:firebase.firestore.FieldValue.serverTimestamp()});clearTimeout(typTimer);typTimer=setTimeout(()=>db.collection(p).doc(ME).delete().catch(()=>{}),4500);}
 function clearTypSignal(){const p=typPath();if(p)db.collection(p).doc(ME).delete().catch(()=>{});lastTypSent=0;}
-function listenTyp(path){if(unsubTyping)unsubTyping();unsubTyping=db.collection(path).onSnapshot(snap=>{const cut=new Date(Date.now()-6000);const typers=[];snap.forEach(doc=>{const d=doc.data();if(d.name!==ME&&d.ts&&d.ts.toDate()>cut)typers.push(d.name);});const bar=g('typing');if(!typers.length)bar.textContent='';else if(typers.length===1)bar.textContent=`${typers[0]} is typing…`;else bar.textContent=`${typers.slice(0,-1).join(', ')} and ${typers.at(-1)} are typing…`;});}
+function listenTyp(path){if(unsubTyping)unsubTyping();unsubTyping=db.collection(path).onSnapshot(snap=>{const cut=new Date(Date.now()-6000);const typers=[];snap.forEach(doc=>{const d=doc.data();if(d.name!==ME&&d.ts&&d.ts.toDate()>cut)typers.push(d.name);});const bar=g('typing');if(!typers.length)bar.textContent='';else if(typers.length===1)bar.textContent=`${typers[0]} が入力中…`;else bar.textContent=`${typers.slice(0,-1).join('、')} と ${typers.at(-1)} が入力中…`;});}
 
-// ── Server context menu ──
+// ━━━━━━━ Context Menus ━━━━━━━
 function showSvCtx(e,svId,sv){
   const ctx=g('ctx');
-  ctx.innerHTML=`<div class="cxi" onclick="showServer('${svId}',${JSON.stringify(sv).replace(/"/g,'&quot;')})">Open</div><div class="cxi" onclick="copySvInvite('${sv.inviteCode||''}')">Copy Invite Code</div>${sv.owner===ME?`<div class="cxi red" onclick="confirmDeleteSv('${svId}')">Delete Server</div>`:''}`;
-  ctx.style.left=e.clientX+'px';ctx.style.top=e.clientY+'px';ctx.classList.remove('gone');e.stopPropagation();
+  ctx.innerHTML=`<div class="cxi" onclick="showServer('${svId}',${JSON.stringify(sv).replace(/"/g,'&quot;')})">📂 Open Server</div>
+    <div class="cxi" onclick="copySvInvite('${sv.inviteCode||''}')">🔗 Copy Invite Code</div>
+    ${sv.owner===ME||IS_ADMIN?`<div class="cxi-sep"></div><div class="cxi" onclick="showServer('${svId}',${JSON.stringify(sv).replace(/"/g,'&quot;')});openServerSettings()">⚙ Server Settings</div>`:``}
+    ${sv.owner===ME||IS_ADMIN?`<div class="cxi red" onclick="confirmDeleteSv('${svId}')">🗑 Delete Server</div>`:''}`;
+  ctx.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';ctx.style.top=e.clientY+'px';ctx.classList.remove('gone');e.stopPropagation();
+}
+function showMemberCtx(e,uname){
+  if(uname===ME||!curSv)return;
+  const isOwnerOrAdmin=curSvData&&(curSvData.owner===ME||IS_ADMIN);
+  if(!isOwnerOrAdmin)return;
+  e.preventDefault();e.stopPropagation();
+  const ctx=g('ctx');
+  ctx.innerHTML=`<div class="cxi" onclick="openAssignRole('${h(uname)}','${curSv}')">🏷 Assign Role</div>
+    <div class="cxi-sep"></div>
+    <div class="cxi red" onclick="openModAction('kick','${h(uname)}','${curSv}')">⚡ Kick</div>
+    <div class="cxi red" onclick="openModAction('ban','${h(uname)}','${curSv}')">🚫 Ban</div>`;
+  ctx.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';ctx.style.top=Math.min(e.clientY,window.innerHeight-120)+'px';ctx.classList.remove('gone');
 }
 function copySvInvite(code){if(code)navigator.clipboard.writeText(code);hideCtx();}
 function confirmDeleteSv(svId){hideCtx();if(!confirm('Delete this server?'))return;db.collection('servers').doc(svId).delete();if(curSv===svId){curSv=null;curCh=null;showDMs();showEmpty();}}
 function hideCtx(){g('ctx').classList.add('gone');}
 
-// ── UI Helpers ──
-function showChat(){g('empty').style.display='none';g('friendsview').style.display='none';g('nitroview').style.display='none';g('chatview').style.display='flex';}
-function showEmpty(){g('empty').style.display='';g('chatview').style.display='none';g('friendsview').style.display='none';g('nitroview').style.display='none';}
-function clearChat(){if(unsubMsgs){unsubMsgs();unsubMsgs=null;}if(unsubTyping){unsubTyping();unsubTyping=null;}g('msgs').innerHTML='<div class="sysmsg" id="welcome-msg"></div>';renderedIds=new Set();lastAuth=null;lastTs=null;g('typing').textContent='';msgDataCache={};}
+// ━━━━━━━ UI Helpers ━━━━━━━
+function showChat(){g('empty').style.display='none';g('friendsview').style.display='none';g('nitroview').style.display='none';g('adminview').style.display='none';g('chatview').style.display='flex';}
+function showEmpty(){g('empty').style.display='flex';g('chatview').style.display='none';g('friendsview').style.display='none';g('nitroview').style.display='none';g('adminview').style.display='none';}
+function clearChat(){if(unsubMsgs){unsubMsgs();unsubMsgs=null;}if(unsubTyping){unsubTyping();unsubTyping=null;}renderedIds=new Set();lastAuth=null;lastTs=null;g('typing').textContent='';msgDataCache={};}
 function resetUI(){clearChat();showEmpty();g('dm-list').innerHTML='';g('ch-list').innerHTML='';g('rail-svs').innerHTML='';}
 function clearListeners(){[unsubMsgs,unsubPres,unsubTyping,unsubSvs,unsubChs,unsubDMs,unsubFriends].forEach(fn=>fn&&fn());}
-function scrollBot(){const w=g('msgs');const near=w.scrollHeight-w.scrollTop-w.clientHeight<200;if(near)w.scrollTop=w.scrollHeight;}
-function highlightRail(id){document.querySelectorAll('.ri').forEach(el=>el.classList.remove('on'));if(id==='__dm'){const el=g('ri-dm');if(el)el.classList.add('on');}else if(id==='__friends'){const el=g('ri-friends');if(el)el.classList.add('on');}else if(id==='__nitro'){const el=g('ri-nitro');if(el)el.classList.add('on');}else{const el=document.querySelector(`.ri[data-id="${id}"]`);if(el)el.classList.add('on');}}
-function openM(id){g(id).classList.remove('gone');if(id==='m-dm'){grpSel=[];dmTab('dm');renderUList('dm-ul','',false);renderUList('grp-ul','',true);}}
+function scrollBot(){const w=g('msgs');const near=w.scrollHeight-w.scrollTop-w.clientHeight<250;if(near)w.scrollTop=w.scrollHeight;}
+function toggleMembersPanel(){g('mpanel').classList.toggle('gone');}
+function highlightRail(id){
+  document.querySelectorAll('.ri').forEach(el=>el.classList.remove('on'));
+  const map={'__dm':'ri-dm','__friends':'ri-friends','__nitro':'ri-nitro','__admin':'ri-admin'};
+  if(map[id]){const el=g(map[id]);if(el)el.classList.add('on');}
+  else{const el=document.querySelector(`.ri[data-id="${id}"]`);if(el)el.classList.add('on');}
+}
+function openM(id){
+  g(id).classList.remove('gone');
+  if(id==='m-dm'){grpSel=[];dmTab('dm');renderUList('dm-ul','',false);renderUList('grp-ul','',true);}
+}
 function closeM(id){g(id).classList.add('gone');}
+function buildTagPicker(containerId,selArr,isEdit){
+  const container=g(containerId);container.innerHTML='';
+  ALL_TAGS.forEach(tag=>{
+    const chip=document.createElement('span');chip.className='tag-chip'+(selArr.includes(tag)?' on':'');chip.textContent=tag;
+    chip.onclick=()=>{if(selArr.includes(tag))selArr.splice(selArr.indexOf(tag),1);else if(selArr.length<3)selArr.push(tag);chip.classList.toggle('on',selArr.includes(tag));};
+    container.appendChild(chip);
+  });
+}
 function g(id){return document.getElementById(id);}
 function h(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function ini(name){return String(name||'?').slice(0,2).toUpperCase();}
 function randCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<8;i++)r+=chars[Math.floor(Math.random()*chars.length)];return r;}
+let toastTimer=null;
+function toast(msg,type=''){
+  const old=document.querySelector('.toast');if(old)old.remove();
+  const el=document.createElement('div');el.className='toast'+(type?' '+type:'');
+  const ico=type==='success'?'✅':type==='error'?'❌':'ℹ️';
+  el.innerHTML=`<span>${ico}</span><span>${h(msg)}</span>`;
+  document.body.appendChild(el);if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.remove(),3500);
+}
 </script>
 </body>
 </html>
