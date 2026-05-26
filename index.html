@@ -468,7 +468,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="pay-divider"></div>
       <div class="macts" style="margin-top:0">
         <button class="mbtn" onclick="closeM('m-pay')">Cancel</button>
-        <button class="mbtn primary" onclick="processPayment()" style="background:var(--nitro-grad);border-color:transparent;color:#000">Pay $0.50 →</button>
+        <button class="mbtn primary" onclick="window.open('https://www.paypal.com/paypalme/gcrobbie/0.50','_blank')" style="background:var(--nitro-grad);border-color:transparent;color:#000">Pay on PayPal →</button>
       </div>
       <p class="pay-note">🔒 This is a demo — no real payment is processed. Stripe integration can be added.</p>
     </div>
@@ -623,7 +623,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
       <!-- Buy button -->
       <div class="nitro-buy-section">
-        <button class="nitro-buy-btn" onclick="openPayModal()">⚡ Get Nitro for $0.50</button>
+        <button class="nitro-buy-btn" onclick="window.open('https://www.paypal.com/paypalme/gcrobbie/0.50','_blank')">⚡ Get Nitro for $0.50</button>
         <div class="nitro-secure">🔒 Secure payment · Cancel anytime · Instant activation</div>
       </div>
     </div>
